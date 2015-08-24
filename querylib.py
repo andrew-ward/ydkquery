@@ -5,6 +5,7 @@ def register(name):
 		return f
 	return decorate
 
+
 @register('or')
 def log_and(visitor, card, left, right):
 	if left.accept(visitor, card):

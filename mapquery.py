@@ -3,6 +3,7 @@ import lextools
 import querylib
 import db
 
+
 PREFIX = ['not', 'any', 'all']
 INFIX = {
 			'or'  : 20,
