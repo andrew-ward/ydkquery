@@ -1,6 +1,6 @@
 import collections
 class YugiohCard(object):
-	def __init__(self, name, text, category, attribute, race, attack, defense, level, lscale=None, rscale=None):
+	def __init__(self, name, text, cid, category, attribute, race, attack, defense, level, lscale=None, rscale=None):
 		self._name = name
 		self._text = text
 		self._category = category
@@ -11,6 +11,7 @@ class YugiohCard(object):
 		self._level = level
 		self._lscale = lscale
 		self._rscale = rscale
+		self._cid = cid
 		
 	def __hash__(self):
 		return hash(self._name)
@@ -24,6 +25,9 @@ class YugiohCard(object):
 		
 	def text(self):
 		return self._text
+		
+	def cid(self):
+		return self._cid
 		
 	def category(self):
 		return self._category

@@ -116,15 +116,10 @@ class DevproCard(ygocard.YugiohCard):
 	
 
 	def __init__(self, name, text, cid, ot, alias, setcode, category, attribute, race, attack, defense, level, lscale=None, rscale=None):
-		ygocard.YugiohCard.__init__(self, name, text, category, attribute, race, attack, defense, level, lscale, rscale)
+		ygocard.YugiohCard.__init__(self, name, text, cid, category, attribute, race, attack, defense, level, lscale, rscale)
 		self._alias_data = alias
 		self._ot_data = ot
 		self._setcode_data = setcode
-		self._cid = cid		
-		
-		
-	def cid(self):
-		return self._cid
 		
 	def availability(self):
 		return ygoenum.get_string('banlist', self._ot_data)
