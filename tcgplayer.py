@@ -19,6 +19,7 @@ def tcg_open(print_url):
 	elif arg.startswith(PRINTABLE_URL_TEMPLATE):
 		url = arg
 
+	# grab the html to scrape
 	conn = urllib2.urlopen(url)
 	html = conn.read()
 	conn.close()
@@ -42,7 +43,7 @@ def tcg_open(print_url):
 	side = []
 	extra = []
 	current = side
-	
+	# side and extra are both in a tag together
 	side_deck = dom.find('b', string='Sideboard:').find_next_sibling('font')
 	for line in side_deck.children:
 		if line.name == 'b' and line.string == 'Extra Deck:':
@@ -57,7 +58,10 @@ def __from_scrape(name, author, mdeck, sdeck, edeck):
 	# converts raw card names from the scrape to actual YugiohCard instances.
 	# uses devpro backend.
 	db = devpro.database()
+
 	main = []
+	# loop through main deck cards, extract the card count n
+	# query devpro for the card instance, and add that instance n times.
 	for line in mdeck:
 		count = int(line[0])
 		text = line[2:]
@@ -95,5 +99,5 @@ def __from_scrape(name, author, mdeck, sdeck, edeck):
 	return ygocard.YugiohDeck(name, author, main, side, extra)
 
 def tcg_save(deck, fl):
-	# this is just here for symettry
+	# this is just here for symmetry
 	raise NotImplementedError('TCGPlayer does not support uploading decks.')

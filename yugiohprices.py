@@ -3,6 +3,9 @@ import json
 
 '''
 An alternate back end using the Yugiohprices.com public API
+
+Currently does not correctly get category and pendulum scales
+Also does not support querying by card id, or getting the card id of a card
 '''
 
 def card_by_name(name):
