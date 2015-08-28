@@ -6,9 +6,10 @@ import re
 		
 PRINTABLE_URL_TEMPLATE="http://yugioh.tcgplayer.com/db/deck_print.asp?deck_id="
 STANDARD_URL_TEMPLATE="http://yugioh.tcgplayer.com/db/deck.asp?deck_id="
-def tcg_open(print_url):
+
+def tcg_open(arg):
 	# supports opening two kinds of url, as well as raw deck id.
-	if isinstance(arg, int):
+	if isinstance(arg, int) or arg.isdigit():
 		url = PRINTABLE_URL_TEMPLATE+str(arg)
 	elif arg.startswith(STANDARD_URL_TEMPLATE):
 		match = re.search('\?deck_id=([0-9]+)', arg)
@@ -18,6 +19,8 @@ def tcg_open(print_url):
 			url = PRINTABLE_URL_TEMPLATE + match.group(1)
 	elif arg.startswith(PRINTABLE_URL_TEMPLATE):
 		url = arg
+	else:
+		raise RuntimeError('URL {0} does not point to a yugioh.TCGPlayer.com decklist'.format(arg))
 
 	# grab the html to scrape
 	conn = urllib2.urlopen(url)
@@ -71,7 +74,14 @@ def __from_scrape(name, author, mdeck, sdeck, edeck):
 			for i in range(count):
 				main.append(card)
 		else:
-			raise RuntimeError('Could not find card with name "{0}"'.format(text))
+			#print 'Could not find card with name "{0}"'.format(text)
+			new_card = db.card_by_name_aprox(text)
+			if new_card != None:
+				#print '    selected {0}'.format(new_card.name())
+				for i in range(count):
+					extra.append(new_card)
+			else:
+				raise RuntimeError('Could not find card with name "{0}"'.format(text))
 
 	side = []
 	for line in sdeck:
@@ -83,7 +93,14 @@ def __from_scrape(name, author, mdeck, sdeck, edeck):
 			for i in range(count):
 				side.append(card)
 		else:
-			raise RuntimeError('Could not find card with name "{0}"'.format(text))
+			#print 'Could not find card with name "{0}"'.format(text)
+			new_card = db.card_by_name_aprox(text)
+			if new_card != None:
+				#print '    selected {0}'.format(new_card.name())
+				for i in range(count):
+					extra.append(new_card)
+			else:
+				raise RuntimeError('Could not find card with name "{0}"'.format(text))
 
 	extra = []
 	for line in edeck:
@@ -95,7 +112,14 @@ def __from_scrape(name, author, mdeck, sdeck, edeck):
 			for i in range(count):
 				extra.append(card)
 		else:
-			raise RuntimeError('Could not find card with name "{0}"'.format(text))
+			#print 'Could not find card with name "{0}"'.format(text)
+			new_card = db.card_by_name_aprox(text)
+			if new_card != None:
+				#print '    selected {0}'.format(new_card.name())
+				for i in range(count):
+					extra.append(new_card)
+			else:
+				raise RuntimeError('Could not find card with name "{0}"'.format(text))
 	return ygocard.YugiohDeck(name, author, main, side, extra)
 
 def tcg_save(deck, fl):

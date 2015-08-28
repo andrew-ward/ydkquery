@@ -17,6 +17,10 @@ def ydk_save(deck, fl):
 		output += '{0}\n'.format(card.cid())
 	fl.write(output)
 
+def ydk_path(flname):
+	return devpro.YGOPRO_PATH + 'deck/'+flname + '.ydk'
+
+
 def ydk_open(path):
 	name = os.path.basename(path)[:-4]
 	db = devpro.database()

@@ -80,6 +80,42 @@ class YGOPRODatabase(object):
 		for row in cursor:
 			yield YugiohCard(row)
 
+	def card_by_name_aprox(self, name):
+		bestcard, minlev = None, len(name)
+		for card in self.all_cards():
+			lev = levenshtein(name, card.name())
+			if lev < minlev:
+				bestcard = card
+				minlev = lev
+		return bestcard
+
+def levenshtein( word1, word2 ):
+	# http://stevehanov.ca/blog/index.php?id=114
+	columns = len(word1) + 1
+	rows = len(word2) + 1
+
+	# build first row
+	currentRow = [0]
+	for column in xrange( 1, columns ):
+		currentRow.append( currentRow[column - 1] + 1 )
+
+	for row in xrange( 1, rows ):
+		previousRow = currentRow
+		currentRow = [ previousRow[0] + 1 ]
+
+		for column in xrange( 1, columns ):
+
+			insertCost = currentRow[column - 1] + 1
+			deleteCost = previousRow[column] + 1
+
+			if word1[column - 1] != word2[row - 1]:
+				replaceCost = previousRow[ column - 1 ] + 1
+			else:                
+				replaceCost = previousRow[ column - 1 ]
+
+			currentRow.append( min( insertCost, deleteCost, replaceCost ) )
+	return currentRow[-1]
+
 class DevproCard(ygocard.YugiohCard):
 	@staticmethod
 	def from_row(row):
@@ -98,9 +134,13 @@ class DevproCard(ygocard.YugiohCard):
 			attribute : row[11]
 			category : row[12]
 		'''
-		catstr = ygoenum.get_string('category', row[6])
-		attrstr = ygoenum.get_string('attribute', row[11])
-		typestr = ygoenum.get_string('type', row[10])
+		try:
+			catstr = ygoenum.get_string('category', row[6])
+			attrstr = ygoenum.get_string('attribute', row[11])
+			typestr = ygoenum.get_string('type', row[10])
+		except ygoenum.EnumError as enum:
+			print 'problem reading card {0}'.format(row[0])
+			raise enum
 		level_value = row[9]
 		lvl = None
 		lscl = None
