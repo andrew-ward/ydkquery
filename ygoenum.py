@@ -1,5 +1,6 @@
 MAGIC_NUMBERS = {
 	'attribute' : {
+		'N/A'   : 0,
 		'EARTH' : 1,
 		'WATER' : 2,
 		'FIRE' :  4,
@@ -9,6 +10,7 @@ MAGIC_NUMBERS = {
 		'DIVINE' : 64
 	},
 	'type' : {
+		'N/A'   : 0,
 		'Warrior' :       1,
 		'Spellcaster' :   2,
 		'Fairy' :         4,
@@ -50,12 +52,12 @@ MAGIC_NUMBERS = {
 		'Ritual-Monster':               129,
 		'Ritual-Spell':                 130,
 		'Ritual-Effect-Monster':        161,
-		'Spirit-Monster':               545,
-		'Union-Monster':                1057,
+		'Spirit-Effect-Monster':        545,
+		'Union-Effect-Monster':         057,
 		'Gemini-Monster':               2081,
-		'Tuner-Normal-Monster':         4113,
+		'Tuner-Monster':                4113,
 		'Tuner-Effect-Monster':         4129,
-		'Synchro-Normal-Monster':       8193,
+		'Synchro-Monster':              8193,
 		'Synchro-Effect-Monster':       8225,
 		'Synchro-Tuner-Effect-Monster': 12321,
 		'Token':                        16401,
@@ -66,10 +68,10 @@ MAGIC_NUMBERS = {
 		'Field-Spell':                  524290,
 		'Counter-Trap':                 1048580,
 		'Flip-Effect-Monster':          2097185,
-		'Toon-Monster':                 4194337,
-		'Xyz-Normal-Monster':           8388609,
+		'Toon-Effect-Monster':          4194337,
+		'Xyz-Monster':                  8388609,
 		'Xyz-Effect-Monster':           8388641,
-		'Pendulum-Normal-Monster' :     16777233,
+		'Pendulum-Monster' :            16777233,
 		'Pendulum-Effect-Monster' :     16777249,
 		# Trap Monster?
 		# XYZ/Pendulum
