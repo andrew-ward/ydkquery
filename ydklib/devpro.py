@@ -20,6 +20,7 @@ class YGOPRODatabase(object):
 		if self.connection != None:
 			self.connection.close()
 			self.connection = None
+
 	def card_by_id(self, cid):
 		if self.connection == None:
 			raise RuntimeError('Cannot load cards while database is closed')
@@ -44,7 +45,7 @@ class YGOPRODatabase(object):
 		for row in cursor:
 			yield DevproCard.from_row(row)
 
-	def cards_by_pattern(self, pattern):
+	def card_by_name(self, name):
 		if self.connection == None:
 			raise RuntimeError('Cannot load cards while database is closed')
 		cursor = self.connection.cursor()
@@ -52,9 +53,14 @@ class YGOPRODatabase(object):
 			SELECT texts.name, texts.desc, datas.*
 			FROM texts, datas
 			WHERE texts.id = datas.id AND texts.name LIKE ?'''
-		cursor.execute(query, [pattern])
-		for row in cursor:
-			yield DevproCard.from_row(row)
+		cursor.execute(query, [name])
+		return DevproCard.from_row(cursor.fetchone())		
+
+	def cards_by_name(self, *names):
+		if self.connection == None:
+			raise RuntimeError('Cannot load cards while database is closed')
+		for name in names:
+			yield self.card_by_name(name)
 			
 	def all_cards(self, anime=False):
 		if self.connection == None:

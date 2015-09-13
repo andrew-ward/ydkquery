@@ -122,7 +122,7 @@ class YugiohCollection(object):
 			return self._groups[name]
 		else:
 			raise KeyError('No group named {0}'.format(name))
-				
+
 	def all(self):
 		return iter(self)
 		
@@ -137,7 +137,12 @@ class YugiohDeck(YugiohCollection):
 			self.add_cards('side', side_deck)
 		if extra_deck:
 			self.add_cards('extra', extra_deck)
-		
+	def count(self, card):
+		return self.main().count(card)
+	def count_all(self, cards):
+		return sum(self.count(card) for card in cards)
+	def size(self):
+		return len(self.main())
 	def main(self):
 		return self.group('main')
 	def side(self):
