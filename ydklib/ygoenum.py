@@ -1,3 +1,9 @@
+"""
+This is just a bunch of magic numbers used by the ygopro database.
+Nobody other than ygopro.py should ever need to import this.
+Got a lot of help from https://www.ygopro.co/Forum/tabid/95/g/posts/t/120/Adding-cards-to-YGOPro--Tutorial----Scripting-video-Added.
+"""
+
 MAGIC_NUMBERS = {
 	'attribute' : {
 		'N/A'   : 0,
@@ -69,7 +75,7 @@ MAGIC_NUMBERS = {
 		'Field-Spell':                  524290,
 		'Counter-Trap':                 1048580,
 		'Flip-Effect-Monster':          2097185,
-		'Flip-Tuner-Effect-Monster':    2101281,
+		'Flip-Tuner-Effect-Monster':    2101281, # Shaddoll Falco is the only one
 		'Toon-Effect-Monster':          4194337,
 		'Xyz-Monster':                  8388609,
 		'Xyz-Effect-Monster':           8388641,
@@ -77,10 +83,10 @@ MAGIC_NUMBERS = {
 		'Pendulum-Effect-Monster' :     16777249,
 		'Pendulum-Tuner-Effect-Monster':16781345,
 		'Xyz-Pendulum-Effect-Monster' : 25165857,
-		# Trap Monster?
-		# XYZ/Pendulum
 	}
 }
+
+# this is not really useful anymore, but I'm not going to delete it.
 MONSTER = set([17, 33, 65, 97, 129, 161, 545, 1057, 2081, 4113, 4129, 8193, 8225, 12321, 16401, 2097185, 4194337, 8388609, 8388641, 16777233, 16777249])
 SPELL = set([2, 130, 65538, 131074, 262146, 524290])
 TRAP = set([4, 131076, 1048580])
@@ -98,6 +104,7 @@ MAGIC_NUMBERS_I = dict((key, invert(value)) for key, value in MAGIC_NUMBERS.item
 class EnumError(RuntimeError): pass
 
 def get_string(section, value):
+	'''given a database number, get the string that represents it'''
 	enum_sect = MAGIC_NUMBERS_I.get(section, None)
 	if enum_sect:
 		if value in enum_sect:
@@ -108,6 +115,7 @@ def get_string(section, value):
 		raise EnumError('{0} is not a valid kind of enum. Options are {1}'.format(section, ', '.join(MAGIC_NUMBERS_I.keys())))
 			
 def get_db_value(section, value):
+	'''given a an enum name, get the database number of it'''
 	enum_sect = MAGIC_NUMBERS.get(section, None)
 	if enum_sect:
 		if value in enum_sect:

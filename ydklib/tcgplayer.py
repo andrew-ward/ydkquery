@@ -1,14 +1,25 @@
 import urllib2
 from bs4 import BeautifulSoup as bsoup
 import ygocard
-import devpro
+import ygopro
 import re
+
+"""
+This provides an interface for opening decks from tcgplayer.com.
+tcgopen mirrors ydkopen, except instead of a file path it expects
+a url. Also accepts deckids (the number at the end of the url).
+
+There is a tcgsave, to mirror ydksave, but it doesn't do anything,
+since tcgplayer.com doesn't support uploading decks via api...
+as far as I know.
+
+"""
 		
 PRINTABLE_URL_TEMPLATE="http://yugioh.tcgplayer.com/db/deck_print.asp?deck_id="
 STANDARD_URL_TEMPLATE="http://yugioh.tcgplayer.com/db/deck.asp?deck_id="
 
-def tcg_open(arg):
-	# supports opening two kinds of url, as well as raw deck id.
+def tcgopen(arg):
+	""" returns a YugiohDeck of the deck at the given url. Also supports opening two kinds of url, as well as raw deck id."""
 	if isinstance(arg, int) or arg.isdigit():
 		url = PRINTABLE_URL_TEMPLATE+str(arg)
 	elif arg.startswith(STANDARD_URL_TEMPLATE):
@@ -59,27 +70,29 @@ def tcg_open(arg):
 
 def __from_scrape(name, author, mdeck, sdeck, edeck):
 	# converts raw card names from the scrape to actual YugiohCard instances.
-	# uses devpro backend.
-	db = devpro.database()
+	# uses ygopro backend.
+	db = ygopro.database()
 
 	main = []
 	# loop through main deck cards, extract the card count n
-	# query devpro for the card instance, and add that instance n times.
+	# query ygopro for the card instance, and add that instance n times.
 	for line in mdeck:
 		count = int(line[0])
 		text = line[2:]
-		cards = list(db.cards_by_pattern(text))
-		if len(cards) > 0:
-			card = cards[0]
+		card = db.find(text, by='name')
+		if card != None:
 			for i in range(count):
 				main.append(card)
 		else:
-			#print 'Could not find card with name "{0}"'.format(text)
-			new_card = db.card_by_name_aprox(text)
+			# this is a kind of nasty hack. A few cards have different
+			# names between tcgplayer and ygopro, whether from an
+			# out of date database or just random weirdness.
+			# this uses the levenshtein algorithm to find the most
+			# similar name. Likely to fail, will replace ASAP.
+			new_card = ygopro.levenshtein_match(text, db.all_cards())
 			if new_card != None:
-				#print '    selected {0}'.format(new_card.name())
 				for i in range(count):
-					extra.append(new_card)
+					main.append(new_card)
 			else:
 				raise RuntimeError('Could not find card with name "{0}"'.format(text))
 
@@ -87,18 +100,15 @@ def __from_scrape(name, author, mdeck, sdeck, edeck):
 	for line in sdeck:
 		count = int(line[0])
 		text = line[2:]
-		cards = list(db.cards_by_pattern(text))
-		if len(cards) > 0:
-			card = cards[0]
+		card = db.find(text, by='name')
+		if card != None:
 			for i in range(count):
 				side.append(card)
 		else:
-			#print 'Could not find card with name "{0}"'.format(text)
-			new_card = db.card_by_name_aprox(text)
+			new_card = ygopro.levenshtein_match(text, db.all_cards())
 			if new_card != None:
-				#print '    selected {0}'.format(new_card.name())
 				for i in range(count):
-					extra.append(new_card)
+					side.append(new_card)
 			else:
 				raise RuntimeError('Could not find card with name "{0}"'.format(text))
 
@@ -106,22 +116,20 @@ def __from_scrape(name, author, mdeck, sdeck, edeck):
 	for line in edeck:
 		count = int(line[0])
 		text = line[2:]
-		cards = list(db.cards_by_pattern(text))
-		if len(cards) > 0:
-			card = cards[0]
+		card = db.find(text, by='name')
+		if card != None:
 			for i in range(count):
 				extra.append(card)
 		else:
-			#print 'Could not find card with name "{0}"'.format(text)
-			new_card = db.card_by_name_aprox(text)
+			new_card = ygopro.levenshtein_match(text, db.all_cards())
 			if new_card != None:
-				#print '    selected {0}'.format(new_card.name())
 				for i in range(count):
 					extra.append(new_card)
 			else:
 				raise RuntimeError('Could not find card with name "{0}"'.format(text))
 	return ygocard.YugiohDeck(name, author, main, side, extra)
 
-def tcg_save(deck, fl):
-	# this is just here for symmetry
+# this is just here for symmetry
+def tcgsave(deck, fl):
+	""" does nothing """
 	raise NotImplementedError('TCGPlayer does not support uploading decks.')

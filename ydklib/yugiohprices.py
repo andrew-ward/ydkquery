@@ -6,9 +6,14 @@ An alternate back end using the Yugiohprices.com public API
 
 Currently does not correctly get category and pendulum scales
 Also does not support querying by card id, or getting the card id of a card
+
+In all, just bad. Use something else. The idea is sound, but until I
+get up the nerve to scrap and parse yugioh.wikia.com, ygopro is the only
+real card database available.
 '''
 
-def card_by_name(name):
+def find(name):
+	'''[Unstable] Given a name, return the YugiohCard with that name using yugiohprices.com for card data'''
 	response = urllib2.urlopen("http://yugiohprices.com/api/card_data/{0}".format(name))
 	html = response.read()
 	response.close()
