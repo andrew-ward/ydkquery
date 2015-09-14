@@ -12,9 +12,9 @@ Uses ydklib.tcgplayer and ydklib.ydk
 
 if __name__ == '__main__':
 	if len(sys.argv) < 2:
-		print 'usage: python netdeck.py url/deckid [deck_name]'
+		sys.out.write('usage: python netdeck.py url/deckid [deck_name]\n')
 	elif '-h' in sys.argv:
-		print 'This is a command line tool for downloading decklists off of tcgplayer.com and saving them in your Devpro deck folder for editing and testing'
+		sys.out.write('This is a command line tool for downloading decklists off of tcgplayer.com and saving them in your Devpro deck folder for editing and testing\n')
 	else:
 		url = sys.argv[1]
 		deck = tcgplayer.tcgopen(url)

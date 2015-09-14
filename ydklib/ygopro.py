@@ -207,8 +207,7 @@ class YGOProCard(ygocard.YugiohCard):
 			attrstr = ygoenum.get_string('attribute', row[11])
 			typestr = ygoenum.get_string('type', row[10])
 		except ygoenum.EnumError as enum:
-			print 'problem reading card {0}'.format(row[0])
-			raise enum
+			raise ygoenum.EnumError('While creating card {0} '+str(enum))
 		level_value = row[9]
 		lvl = None
 		lscl = None

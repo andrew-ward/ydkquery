@@ -48,4 +48,4 @@ if __name__ == '__main__':
 	# calculate the chance of opening with a hand that
 	# fulfills the above requirements
 	# hand_size is optional, by default it's 5.
-	print good_hand.probability(mermail, hand_size=5)
+	print( good_hand.probability(mermail, hand_size=5) )
