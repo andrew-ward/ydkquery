@@ -1,4 +1,4 @@
-from consistlib import describe
+from consistlib import Cardset
 from ydklib import ydk
 
 """
@@ -18,13 +18,13 @@ if __name__ == '__main__':
 
 	# create sets of cards. These are treated as variables, that calculate
 	# how many of any of these cards are in a hand.
-	discarder = describe.Cardset(mermail.get([
+	discarder = Cardset(mermail.get([
 		'Mermail Abyssleed',
 		'Mermail Abyssmegalo',
 		'Mermail Abyssteus',
 		'Mermail Abyssturge',
 		'Mermail Abysspike']))	
-	discard_fodder = describe.Cardset(mermail.get([
+	discard_fodder = Cardset(mermail.get([
 		'Atlantean Dragoons',
 		'Atlantean Marksman',
 		'Atlantean Heavy Infantry',

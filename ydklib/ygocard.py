@@ -109,7 +109,7 @@ class YugiohCard(object):
 		return self._lscale
 				
 	def right_scale(self):
-		'''returns the left pendulum scale of the monster as a string. Non-pendulums return None'''
+		'''returns the right pendulum scale of the monster as a string. Non-pendulums return None'''
 		return self._rscale
 
 		
