@@ -80,7 +80,7 @@ ydklib/ygopro.py: The module that handles interfacing with the ygopro database a
 			
 			
 ydklib/ygocard.py: Holds the data structures that make up yugioh cards and decks.	
-	YugiohCard: never try to construct one of these - let the database or ydkopen/tcgopen do it for you.
+ 	YugiohCard: never try to construct one of these - let the database or ydkopen/tcgopen do it for you.
 		attack()
 			returns the attack of the monster as an integer. If the card is not a monster, returns 0. If the monster has ? attack, returns a negative number.
 			
