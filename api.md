@@ -3,6 +3,7 @@ consistency.py: An example on how to use consistlib.
 netdeck.py: A command line application that downloads tcgplayer.com decks and saves them to your ygopro decks folder.
 	
 ydklib/
+
 	paths.py: reads the ydklib.conf file and gives you paths to your ygopro folder.
 		database()
 			returns path to cards.cdb in ygopro.
