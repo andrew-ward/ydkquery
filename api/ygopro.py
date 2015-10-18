@@ -1,30 +1,25 @@
-import ygoenum
-import ygocard
-import collections
 import os
-import ygopro
-import paths
-
+import yugioh
 """
-This is just a front end for functions provided by YugiohDeck,
-YGOProDatabase, and YGOProDeck. It is also the module you'll be using
-most often.
+This is the front end for reading and writing ygopro .ydk deck lists,
+as well as searching the ygopro database for cards.
 """
 
-def ydksave(deck, fl):
+class YGOProError(RuntimeError): pass
+
+def save_deck(deck, fl):
 	'''takes a YugiohDeck, converts to ydk, and writes to a file.'''
 	fl.write(deck.as_ydk())
 
 def deck_path(dname):
 	''' uses the paths module to turn the name of a deck as you would see it in ygopro, to a filename and absolute path.'''
-	flname = dname + '.ydk'
-	return os.path.join(paths.decks(), flname)
+	return os.path.join(yugioh.config.decks(), dname + '.ydk')
 
 
-def ydkopen(path):
+def load_deck(path):
 	'''  opens and parses a .ydk file. Uses ygopro.YGOProDatabase to figure out what card cooresponds to the given card id. '''
 	name = os.path.basename(path)[:-4]
-	db = ygopro.database()
+	db = yugioh.database.database()
 	main = []
 	side = []
 	extra = []
@@ -53,5 +48,12 @@ def ydkopen(path):
 				card = db.find(cid)
 				current.append(card)
 	db.close()
-	return ygocard.YugiohDeck(name, author, main, side, extra)
+	return yugioh.deck.YugiohDeck(name, author, main, side, extra)
 
+def load_card(name):
+	db = yugioh.database.database()
+	card = db.find(name, by='name')
+	db.close()
+	if card == None:
+		raise YGOProError('Could not find card {0}'.format(name))
+	return card

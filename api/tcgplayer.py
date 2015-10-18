@@ -1,24 +1,18 @@
 import urllib2
 from bs4 import BeautifulSoup as bsoup
-import ygocard
-import ygopro
+import yugioh
 import re
 
 """
 This provides an interface for opening decks from tcgplayer.com.
-tcgopen mirrors ydkopen, except instead of a file path it expects
-a url. Also accepts deckids (the number at the end of the url).
-
-There is a tcgsave, to mirror ydksave, but it doesn't do anything,
-since tcgplayer.com doesn't support uploading decks via api...
-as far as I know.
-
+This module does not use the official tcgplayer api, because reasons.
+load_deck accepts a deck id or a url from tcgplayer.com
 """
 		
 PRINTABLE_URL_TEMPLATE="http://yugioh.tcgplayer.com/db/deck_print.asp?deck_id="
 STANDARD_URL_TEMPLATE="http://yugioh.tcgplayer.com/db/deck.asp?deck_id="
 
-def tcgopen(arg):
+def load_deck(arg):
 	""" returns a YugiohDeck of the deck at the given url. Also supports opening two kinds of url, as well as raw deck id."""
 	if isinstance(arg, int) or arg.isdigit():
 		url = PRINTABLE_URL_TEMPLATE+str(arg)
@@ -71,7 +65,7 @@ def tcgopen(arg):
 def __from_scrape(name, author, mdeck, sdeck, edeck):
 	# converts raw card names from the scrape to actual YugiohCard instances.
 	# uses ygopro backend.
-	db = ygopro.database()
+	db = yugioh.database.database()
 
 	main = []
 	# loop through main deck cards, extract the card count n
@@ -89,7 +83,7 @@ def __from_scrape(name, author, mdeck, sdeck, edeck):
 			# out of date database or just random weirdness.
 			# this uses the levenshtein algorithm to find the most
 			# similar name. Likely to fail, will replace ASAP.
-			new_card = ygopro.levenshtein_match(text, db.all_cards())
+			new_card = yugioh.database.levenshtein_match(text, db.all_cards())
 			if new_card != None:
 				for i in range(count):
 					main.append(new_card)
@@ -105,7 +99,7 @@ def __from_scrape(name, author, mdeck, sdeck, edeck):
 			for i in range(count):
 				side.append(card)
 		else:
-			new_card = ygopro.levenshtein_match(text, db.all_cards())
+			new_card = yugioh.database.levenshtein_match(text, db.all_cards())
 			if new_card != None:
 				for i in range(count):
 					side.append(new_card)
@@ -121,15 +115,18 @@ def __from_scrape(name, author, mdeck, sdeck, edeck):
 			for i in range(count):
 				extra.append(card)
 		else:
-			new_card = ygopro.levenshtein_match(text, db.all_cards())
+			new_card = yugioh.database.levenshtein_match(text, db.all_cards())
 			if new_card != None:
 				for i in range(count):
 					extra.append(new_card)
 			else:
 				raise RuntimeError('Could not find card with name "{0}"'.format(text))
-	return ygocard.YugiohDeck(name, author, main, side, extra)
+	return yugioh.deck.YugiohDeck(name, author, main, side, extra)
 
 # this is just here for symmetry
-def tcgsave(deck, fl):
+def save_deck(deck, fl):
 	""" does nothing """
 	raise NotImplementedError('TCGPlayer does not support uploading decks.')
+
+def load_card(name):	
+	raise NotImplementedError('TCGPlayer does not support searching individual cards.')

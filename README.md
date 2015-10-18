@@ -39,3 +39,18 @@ print( good_hand.probability(mermail, hand_size=5) )
 ```
 
 For more information on how things work, look at api.txt or the comments in each module.
+
+
+Todo:
+	refactor
+		one module per card source
+		Deck contains one of Main, Extra, or Side
+		Collection is the combined Main, Extra, and Side
+		Rename things according to consistent name scheme
+	bugfix
+		fix consistlib
+	prices search
+	support more sites
+		yugioh.tcgplayer.com
+		yugiohtopdecks.com
+		yugiohprices.com

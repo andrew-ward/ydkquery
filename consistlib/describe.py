@@ -88,22 +88,13 @@ class AST(object):
 		for hand in hands:
 			if self(hand):
 				successes += hand.combinations(deck, hand_size)
-		return float(successes) / handgen.choose(deck.size(), hand_size)
-	
-class Number(AST):
-	'''An integer that can be compared with cardsets'''
-	def __init__(self, n):
-		self.value = n
-	def __str__(self):
-		return str(self.value)
-	def __call__(self, hand):
-		return self.value
-	def variables(self):
-		return frozenset()
-		
+		return float(successes) / handgen.choose(handgen.size(deck), hand_size)
+
 class Cardset(AST):
 	'''a set of YugiohCards. The fundamental variable of expressions.'''
 	def __init__(self, cset):
+		if cset == None:
+			raise TypeError("Cardset does not accept NoneType")
 		self.cards = frozenset(cset)
 	def __str__(self):
 		return '{' + ','.join(str(x) for x in self.cards) + '}'
@@ -119,6 +110,17 @@ class Cardset(AST):
 	def variables(self):
 		yield self.cards
 	
+class Number(AST):
+	'''An integer that can be compared with cardsets'''
+	def __init__(self, n):
+		self.value = n
+	def __str__(self):
+		return str(self.value)
+	def __call__(self, hand):
+		return self.value
+	def variables(self):
+		return frozenset()
+			
 class Constraint(AST):
 	'''second level AST for compound expression objects (i.e. Add, And, etc.)'''
 	def __init__(self, terms):

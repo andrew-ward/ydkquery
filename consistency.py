@@ -1,5 +1,6 @@
 from consistlib import Cardset
-from ydklib import ydk
+from api import ygopro
+from api import yugioh
 
 """
 A demonstration of how to use consistlib to calculate the consistency of
@@ -14,17 +15,17 @@ if __name__ == '__main__':
 	# to a deck in your ygopro/deck/ folder.
 	# deck_path depends on you having ydklib.conf set up
 	# to point to the ygopro directory
-	mermail = ydk.ydkopen(ydk.deck_path('AI_Mermail'))
+	mermail = ygopro.load_deck(ygopro.deck_path('AI_Mermail'))
 
 	# create sets of cards. These are treated as variables, that calculate
 	# how many of any of these cards are in a hand.
-	discarder = Cardset(mermail.get([
+	discarder = Cardset(mermail.main.get_all([
 		'Mermail Abyssleed',
 		'Mermail Abyssmegalo',
 		'Mermail Abyssteus',
 		'Mermail Abyssturge',
-		'Mermail Abysspike']))	
-	discard_fodder = Cardset(mermail.get([
+		'Mermail Abysspike']))
+	discard_fodder = Cardset(mermail.main.get_all([
 		'Atlantean Dragoons',
 		'Atlantean Marksman',
 		'Atlantean Heavy Infantry',

@@ -21,6 +21,16 @@ Algorithm:
 		that by the total number of possible hands.
 """
 
+# central YugiohDeck interface
+def count_all(deck, cards):
+	return deck.main.count_all(cards)
+	
+def all_cards(deck):
+	return deck.main.all()
+	
+def size(deck):
+	return len(deck.main)
+
 def choose(n, k):
 	# classic combinatorics function.
 	# see https://en.wikipedia.org/wiki/Combination
@@ -47,7 +57,7 @@ class Term(object):
 	def combinations(self, deck, hand_size=5):
 		# determine how many ways the given set of cards can be drawn
 		# such that there are exactly $(self.count) of them in a hand.
-		total = deck.count_all(self.cardset)
+		total = count_all(deck, self.cardset)
 		return choose(total, self.count)
 		
 	def __repr__(self):
@@ -105,14 +115,14 @@ def _filter_hands(hands, variables, deck, hand_size=5, complete=True):
 			# is too small. The variable is just all the cards that
 			# weren't mentioned in the given variables.
 			diff = hand_size - hand.size()
-			tmpvar = deck.main() - set(v for varb in variables for v in varb)
+			tmpvar = all_cards(deck) - set(v for varb in variables for v in varb)
 			yield hand.add_term(diff, tmpvar)
 		else:
 			# checks that hand doesn't expect more copies of a card
 			# than exist in the deck.
 			legal = True
 			for term in hand:
-				if term.count > deck.count_all(term.cardset):
+				if term.count > count_all(deck, term.cardset):
 					legal = False
 					break
 			if legal:

@@ -1,13 +1,14 @@
-import ygoenum
-import ygocard
+import enum
+import card
+import deck
 import sqlite3 as sqlite
-import paths
+import config
 
 
 class YGOProDatabase(object):
 	'''a wrapper around an sqlite connection to the cards.cdb database.'''
 	def __init__(self, cardscdb = None):
-		self.db_path = cardscdb or paths.database()
+		self.db_path = cardscdb or config.database()
 		
 		# with most of the query methods, it will open a connection if you
 		# don't already have one - even if you explicitly closed it.
@@ -39,6 +40,9 @@ class YGOProDatabase(object):
 		self.close()
 		return False
 			
+	def __make_card(self, row):
+		return YGOProCard.from_row(row)
+			
 	def find(self, arg, by='id'):
 		'''find a card given a certain parameter
 	  id: find the card with the given card id
@@ -48,6 +52,8 @@ class YGOProDatabase(object):
 		if self.connection == None:
 			self.open()
 		if by == 'id':
+			if isinstance(arg, str) and any(c.isalpha() for c in arg):
+				raise TypeError('Invalid card id "{0}"'.format(arg))
 			query = '''
 			SELECT texts.name, texts.desc, datas.*
 			FROM texts, datas
@@ -65,14 +71,14 @@ class YGOProDatabase(object):
 		if row == None:
 			return row
 		else:
-			return YGOProCard.from_row(row)
+			return self.__make_card(row)
 		
 	def find_all(self, args, by='id'):
 		'''A convenience method for finding multiple things at once. See YGOPRODatabase.find for "by" options'''
 		if self.connection == None:
 			self.open()
 		for arg in args:
-			yield self.search(arg, by)
+			yield self.search(arg, by) # why isn't this self.find?
 			
 	def search(self, arg, by='name'):
 		'''find multiple cards that fulfill certain requirements
@@ -103,7 +109,7 @@ class YGOProDatabase(object):
 		else:
 			raise RuntimeError('Invalid database search type ({0})'.format(by))		
 		for row in cursor:
-			yield YGOProCard.from_row(row)
+			yield self.__make_card(row)
 			
 	def all_cards(self, anime=False):
 		'''get every card available in the database'''
@@ -118,7 +124,7 @@ class YGOProDatabase(object):
 				FROM texts, datas
 				WHERE texts.id = datas.id''' + ' AND datas.ot < 4' if not anime else ''
 			cursor.execute(query)
-			self.__all_card_cache = [YGOProCard.from_row(row) for row in cursor]
+			self.__all_card_cache = [self.__make_card(row) for row in cursor]
 		return self.__all_card_cache
 
 
@@ -177,7 +183,7 @@ def levenshtein_match(name, cards):
 			minlev = lev
 	return bestcard
 
-class YGOProCard(ygocard.YugiohCard):
+class YGOProCard(card.YugiohCard):
 	'''A YugiohCard with extra information from the ygopro database.'''
 	
 	@staticmethod
@@ -203,11 +209,11 @@ class YGOProCard(ygocard.YugiohCard):
 		if row == None:
 			raise TypeError('Cannot create a YGOProCard from None')
 		try:
-			catstr = ygoenum.get_string('category', row[6])
-			attrstr = ygoenum.get_string('attribute', row[11])
-			typestr = ygoenum.get_string('type', row[10])
-		except ygoenum.EnumError as enum:
-			raise ygoenum.EnumError('While creating card {0} '+str(enum))
+			catstr = enum.get_string('category', row[6])
+			attrstr = enum.get_string('attribute', row[11])
+			typestr = enum.get_string('type', row[10])
+		except dbenum.EnumError as enum_err:
+			raise dbenum.EnumError('While creating card {0} '+str(enum))
 		level_value = row[9]
 		lvl = None
 		lscl = None
@@ -224,7 +230,7 @@ class YGOProCard(ygocard.YugiohCard):
 	
 
 	def __init__(self, name, text, cid, ot, alias, setcode, category, attribute, race, attack, defense, level, lscale=None, rscale=None):
-		ygocard.YugiohCard.__init__(self, name, text, cid, category, attribute, race, attack, defense, level, lscale, rscale)
+		card.YugiohCard.__init__(self, name, text, cid, category, attribute, race, attack, defense, level, lscale, rscale)
 		# these are only really relevant to ygopro.
 		self._alias_data = alias
 		self._ot_data = ot
@@ -233,7 +239,7 @@ class YGOProCard(ygocard.YugiohCard):
 	# only available for cards gotten from the database
 	def availability(self):
 		''' get the banlist that this card is playable on'''
-		return ygoenum.get_string('banlist', self._ot_data)
+		return enum.get_string('banlist', self._ot_data)
 		
 	def alias(self):
 		'''This marks cards with multiple artworks. Should be unnecessary to deal with.'''
@@ -253,6 +259,8 @@ def database():
 def all_cards():
 	'''get every card available'''
 	db = database()
-	cards = list(db.all_card())
-	db.close()
-	return cards
+	return db.all_cards()
+
+if __name__ == '__main__':
+	cards = all_cards()
+	print len(cards)
