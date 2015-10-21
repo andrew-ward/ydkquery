@@ -1,6 +1,7 @@
 import operator
 import itertools
 import handgen
+from interface import all_cards, count_all, size
 """
 Declares an Abstract Syntax Tree that represents an expression.
 The AST can be built up using python operators, and in the future,
@@ -22,7 +23,6 @@ as there is at least one of that card. Whether that is reliable or
 wanted has yet to be decided.
 
 """
-
 class SyntaxError(RuntimeError):
 	'''this error is thrown if the user creates an invalid expression'''
 	def __init__(self):

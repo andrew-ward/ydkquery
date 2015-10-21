@@ -10,6 +10,10 @@ class YugiohSet(object):
 		return self.size()
 	def __iter__(self):
 		return iter(self.all())
+	def all(self):
+		return set(self._contents.keys())
+	def __getitem__(self, key):
+		return self.count(key)
 	def add(self, card):
 		if card in self._contents:
 			self._contents[card] += 1
@@ -41,8 +45,6 @@ class YugiohSet(object):
 		for pred in preds:
 			result = result & self.find(pred)
 		return result
-	def all(self):
-		return set(self._contents.keys())
 	def enumerate(self):
 		result = []
 		for card, count in self._contents.items():
@@ -61,6 +63,9 @@ class YugiohDeck(object):
 		
 		'''the creator of the deck'''
 		self.author = author
+		
+	def all(self):
+		return itertools.chain(self.main.enumerate(), self.side.enumerate(), self.extra.enumerate())
 		
 	def __iter__(self):
 		return iter(self.main)

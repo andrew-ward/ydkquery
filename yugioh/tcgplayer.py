@@ -65,7 +65,7 @@ def load_deck(arg):
 def __from_scrape(name, author, mdeck, sdeck, edeck):
 	# converts raw card names from the scrape to actual YugiohCard instances.
 	# uses ygopro backend.
-	db = yugioh.database.database()
+	db = core.database.database()
 
 	main = []
 	# loop through main deck cards, extract the card count n
@@ -83,7 +83,7 @@ def __from_scrape(name, author, mdeck, sdeck, edeck):
 			# out of date database or just random weirdness.
 			# this uses the levenshtein algorithm to find the most
 			# similar name. Likely to fail, will replace ASAP.
-			new_card = yugioh.database.levenshtein_match(text, db.all_cards())
+			new_card = core.database.levenshtein_match(text, db.all_cards())
 			if new_card != None:
 				for i in range(count):
 					main.append(new_card)
@@ -99,7 +99,7 @@ def __from_scrape(name, author, mdeck, sdeck, edeck):
 			for i in range(count):
 				side.append(card)
 		else:
-			new_card = yugioh.database.levenshtein_match(text, db.all_cards())
+			new_card = core.database.levenshtein_match(text, db.all_cards())
 			if new_card != None:
 				for i in range(count):
 					side.append(new_card)
@@ -115,13 +115,13 @@ def __from_scrape(name, author, mdeck, sdeck, edeck):
 			for i in range(count):
 				extra.append(card)
 		else:
-			new_card = yugioh.database.levenshtein_match(text, db.all_cards())
+			new_card = core.database.levenshtein_match(text, db.all_cards())
 			if new_card != None:
 				for i in range(count):
 					extra.append(new_card)
 			else:
 				raise RuntimeError('Could not find card with name "{0}"'.format(text))
-	return yugioh.deck.YugiohDeck(name, author, main, side, extra)
+	return core.deck.YugiohDeck(name, author, main, side, extra)
 
 # this is just here for symmetry
 def save_deck(deck, fl):

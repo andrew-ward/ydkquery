@@ -1,5 +1,5 @@
 import os
-import yugioh
+import core as core
 """
 This is the front end for reading and writing ygopro .ydk deck lists,
 as well as searching the ygopro database for cards.
@@ -13,13 +13,13 @@ def save_deck(deck, fl):
 
 def deck_path(dname):
 	''' uses the paths module to turn the name of a deck as you would see it in ygopro, to a filename and absolute path.'''
-	return os.path.join(yugioh.config.decks(), dname + '.ydk')
+	return os.path.join(core.config.decks(), dname + '.ydk')
 
 
 def load_deck(path):
 	'''  opens and parses a .ydk file. Uses ygopro.YGOProDatabase to figure out what card cooresponds to the given card id. '''
 	name = os.path.basename(path)[:-4]
-	db = yugioh.database.database()
+	db = core.database.database()
 	main = []
 	side = []
 	extra = []
@@ -48,10 +48,10 @@ def load_deck(path):
 				card = db.find(cid)
 				current.append(card)
 	db.close()
-	return yugioh.deck.YugiohDeck(name, author, main, side, extra)
+	return core.deck.YugiohDeck(name, author, main, side, extra)
 
 def load_card(name):
-	db = yugioh.database.database()
+	db = core.database.database()
 	card = db.find(name, by='name')
 	db.close()
 	if card == None:

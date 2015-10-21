@@ -1,6 +1,8 @@
-import urllib2
-import json
-import yugioh
+import urllib, json
+import sys
+import core, price
+
+class APIError(RuntimeError): pass
 
 '''
 A frontend for the yugiohprices api. Gets price data on a card.
@@ -9,16 +11,22 @@ May eventually create a more in-depth query library that uses this api.
 '''
 
 def get_price_data(card):
-	if isinstance(card, yugioh.card.YugiohCard):
+	if isinstance(card, core.card.YugiohCard):
 		cardname = card.name()
 	else:
 		cardname = card
-	url = 'http://yugiohprices.com/api/get_card_prices/{0}'.format(cardname)
-	fl = urllib2.urlopen(url)
-	info = json.loads(fl.read())
+		
+	cname = urllib.quote_plus(cardname)
+	url = 'http://yugiohprices.com/api/get_card_prices/{0}'.format(cname)
+	
+	fl = urllib.urlopen(url)
+	text = fl.read()
+	
+	info = json.loads(text)
+	
 	fl.close()
 	if info['status'] == 'fail':
-		raise RuntimeError(info['message'])
+		raise APIError(info['message'])
 	else:
 		versions = []
 		for version in info['data']:
@@ -28,7 +36,7 @@ def get_price_data(card):
 			price_data = None
 			if version['price_data']['status'] == 'success':
 				price_info = version['price_data']['data']['prices']
-				price_data = yugioh.price.PriceHistory(
+				price_data = price.PriceHistory(
 					price_info['high'],
 					price_info['average'],
 					price_info['low'],
@@ -43,14 +51,23 @@ def get_price_data(card):
 						365 : price_info['shift_365']
 					}
 				)
-			release = yugioh.price.CardVersion(set_name, print_tag, rarity, price_data)
+			release = price.CardVersion(set_name, print_tag, rarity, price_data)
 			
 			versions.append(release)
 		return versions
 			
 def get_low_price(card):
+	sys.stderr.write('Deprecated: yugiohprices.get_low_price')
 	data = get_price_data(card)
-	return min([version.price.average for version in data])
+	return min([version.price.average for version in data if version.price])
 	
 def get_high_price(card):
-	return max([version.price.average for version in data])
+	sys.stderr.write('Deprecated: yugiohprices.get_low_price')
+	data = get_price_data(card)
+	return max([version.price.average for version in data if version.price])
+	
+def get_average_price(card):
+	sys.stderr.write('Deprecated: yugiohprices.get_low_price')
+	data = get_price_data(card)
+	ls = [version.price.average for version in data if version.price]
+	return sum(ls) / float(len(ls))

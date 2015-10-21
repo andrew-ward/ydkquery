@@ -20,17 +20,7 @@ Algorithm:
 		determine the number of ways to draw those hands, and divide
 		that by the total number of possible hands.
 """
-
-# central YugiohDeck interface
-def count_all(deck, cards):
-	return deck.main.count_all(cards)
-	
-def all_cards(deck):
-	return deck.main.all()
-	
-def size(deck):
-	return len(deck.main)
-
+from interface import all_cards, count_all, size
 def choose(n, k):
 	# classic combinatorics function.
 	# see https://en.wikipedia.org/wiki/Combination

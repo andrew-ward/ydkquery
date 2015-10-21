@@ -28,7 +28,7 @@ class PriceHistory(object):
 		else:
 			return self.average < other	
 		
-	def change(self, timescale):
+	def delta(self, timescale):
 		if timescale not in self._delta:
 			raise TypeError('Cannot get price change data over last {0} days'.format(timescale))
 		return self._delta[timescale]
@@ -39,7 +39,7 @@ class CardVersion(object):
 		self.set_name = set_name
 		self.print_tag = print_tag
 		self.rarity = rarity
-		self.price = price
+		self.price = price # a PriceHistory object
 	def __str__(self):
 		return '{0} {1} from {2}'.format(self.rarity, str(self.price) if self.price else '??', self.set_name)
 	def __repr__(self):
