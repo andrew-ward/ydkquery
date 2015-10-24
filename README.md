@@ -4,53 +4,19 @@ A set of Python libraries for reading, writing, and generally working with vario
 
 Primarily designed for use in statistical analysis programs involving yugioh cards. It allows you to open .ydk decks as used by YGOPro or DevPro, and manipulate the cards and deck as native python objects.
 
-It also supports opening decklists from tcgplayer.com, and converting your decks to several different formats.
+It also contains several other modules, including yugioh.tcgplayer that loads decks from the tcgplayer.com decklist archives, and yugioh.yugiohprices, which uses the yugiohprices.com web api for pricing information.
 
 There are also some example applications using the library.
-netdeck.py is a command line application that will automatically download tcgplayer.com decklists and save it into your ygopro deck folder - allowing you to immediately start playing with the deck, or modifying it as you see fit.
 
-consistlib is one of the coolest things here. It is a module that will calculate the probability of drawing certain cards in your opening hand, like several hypergeometric calculators around the internet. Unlike any other I've seen, this probability calculator will allow complicated, arbitrarily complex expressions. Need to know your chance of opening Lonefire + Soulcharge? Easy. Need to know how big of an impact dropping E. Tele from your Ritual Beast deck has on being able to combo off? No problem. It can even calculate the likelihood that, if you drew one or more Trade-In, you also drew the same number of level 8 targets.
+`netdeck` is a command line application that will automatically download tcgplayer.com decklists and save it into your ygopro deck folder - allowing you to immediately start playing with the deck, or modifying it as you see fit.
 
-Example usage: (see consistency.py for more explanation)
+`pricecheck` is a command line application that will calculate the expected price of building a given ydk deck, using price data from yugiohprices.com.
 
-```python
-from consistlib import Cardset
-from ydklib import ydk
+`consistlib` is one of the coolest things here. It is a module that will calculate the probability of drawing certain cards in your opening hand, like several hypergeometric calculators around the internet. Unlike any other I've seen, this probability calculator will allow complicated, arbitrarily complex expressions. Need to know your chance of opening Lonefire + Soulcharge? Easy. Need to know how big of an impact dropping E. Tele from your Ritual Beast deck has on being able to combo off first turn? No problem. It can even calculate complicated things, such as the likelihood that, if you drew one or more Trade-In, you also drew the same number of level 8 targets.
 
-mermail = ydk.ydkopen(ydk.deck_path('AI_Mermail'))
+Some additions I plan to add in the future:
+	- an alternate backend using the yugioh wikia, instead of ygopro, for card data.
+	- a crawler for yugiohtopdecks.com, to make some of that information available programmatically.
+	- a more powerful search/query language, so users can search for cards without using sql queries or a `[x for x in database.all() if ...]` form.
 
-discarder = Cardset(mermail.get([
-	'Mermail Abyssleed',
-	'Mermail Abyssmegalo',
-	'Mermail Abyssteus',
-	'Mermail Abyssturge',
-	'Mermail Abysspike']))
-	
-discard_fodder = Cardset(mermail.get([
-	'Atlantean Dragoons',
-	'Atlantean Marksman',
-	'Atlantean Heavy Infantry',
-	'Mermail Abyssgunde',
-	'Neptabyss the Atlantean Prince']))
-	
-good_hand = ((discarder > 0) & (discard_fodder > 0))
-
-print( good_hand.probability(mermail, hand_size=5) )
-```
-
-For more information on how things work, look at api.txt or the comments in each module.
-
-
-Todo:
-	refactor
-		one module per card source
-		Deck contains one of Main, Extra, or Side
-		Collection is the combined Main, Extra, and Side
-		Rename things according to consistent name scheme
-	bugfix
-		fix consistlib
-	prices search
-	support more sites
-		yugioh.tcgplayer.com
-		yugiohtopdecks.com
-		yugiohprices.com
+Also, for more great yugioh sources, check out yugiohprices.com, yugiohtopdecks.py, and yugiohdeckbuilder.com. They have a lot of stuff similar to what I've made, albeit as a website.

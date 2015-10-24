@@ -1,19 +1,21 @@
-import urllib2
-from bs4 import BeautifulSoup as bsoup
-import yugioh
-import re
-
 """
 This provides an interface for opening decks from tcgplayer.com.
 This module does not use the official tcgplayer api, because reasons.
 load_deck accepts a deck id or a url from tcgplayer.com
 """
+
+import urllib2
+from bs4 import BeautifulSoup as bsoup
+import core
+import re
 		
 PRINTABLE_URL_TEMPLATE="http://yugioh.tcgplayer.com/db/deck_print.asp?deck_id="
 STANDARD_URL_TEMPLATE="http://yugioh.tcgplayer.com/db/deck.asp?deck_id="
 
 def load_deck(arg):
-	""" returns a YugiohDeck of the deck at the given url. Also supports opening two kinds of url, as well as raw deck id."""
+	"""load_deck(string url OR string/int deck id) -> core.deck.YugiohDeck?
+	
+	returns a YugiohDeck of the deck at the given url. Also supports opening two kinds of url, as well as raw deck id."""
 	if isinstance(arg, int) or arg.isdigit():
 		url = PRINTABLE_URL_TEMPLATE+str(arg)
 	elif arg.startswith(STANDARD_URL_TEMPLATE):
@@ -35,7 +37,8 @@ def load_deck(arg):
 	dom = bsoup(html, 'lxml')
 	
 	heading = dom.div.b
-	assert(heading != None)
+	if heading == None:
+		return None
 	
 	name = str(heading.contents[0].strip())
 	author = str(heading.contents[2].strip())
@@ -123,10 +126,3 @@ def __from_scrape(name, author, mdeck, sdeck, edeck):
 				raise RuntimeError('Could not find card with name "{0}"'.format(text))
 	return core.deck.YugiohDeck(name, author, main, side, extra)
 
-# this is just here for symmetry
-def save_deck(deck, fl):
-	""" does nothing """
-	raise NotImplementedError('TCGPlayer does not support uploading decks.')
-
-def load_card(name):	
-	raise NotImplementedError('TCGPlayer does not support searching individual cards.')

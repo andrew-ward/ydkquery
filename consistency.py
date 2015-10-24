@@ -1,13 +1,13 @@
-from consistlib import Cardset
-from api import ygopro
-from api import yugioh
-
+#!/usr/bin/env python
 """
 A demonstration of how to use consistlib to calculate the consistency of
 your opening hand in a deck. See the comments in consistlib.describe
 for more implementation details.
 
 """
+
+from consistlib import Cardset
+from yugioh import ygopro
 
 if __name__ == '__main__':
 	# load the deck you want to work with using ydkopen

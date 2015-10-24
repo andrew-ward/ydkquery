@@ -1,18 +1,23 @@
+"""
+A frontend for the yugiohprices api. Gets price data on a card.
+
+May eventually create a more in-depth query library that uses this api.
+"""
+
 import urllib, json
 import sys
 import core, price
 
 class APIError(RuntimeError): pass
 
-'''
-A frontend for the yugiohprices api. Gets price data on a card.
-
-May eventually create a more in-depth query library that uses this api.
-'''
-
 def get_price_data(card):
+	"""get_price_data(string cardname OR core.card.YugiohCard card)
+	-> price.CardVersion list
+	
+	get all price information available for a single card from the YugiohPrices api.
+	"""
 	if isinstance(card, core.card.YugiohCard):
-		cardname = card.name()
+		cardname = card.name
 	else:
 		cardname = card
 		
@@ -55,19 +60,12 @@ def get_price_data(card):
 			
 			versions.append(release)
 		return versions
-			
-def get_low_price(card):
-	sys.stderr.write('Deprecated: yugiohprices.get_low_price')
+
+def rarities(card):
+	"""rarities(core.deck.YugiohDeck) -> string list
+	Return a list of all rarities the card is available in"""
 	data = get_price_data(card)
-	return min([version.price.average for version in data if version.price])
-	
-def get_high_price(card):
-	sys.stderr.write('Deprecated: yugiohprices.get_low_price')
-	data = get_price_data(card)
-	return max([version.price.average for version in data if version.price])
-	
-def get_average_price(card):
-	sys.stderr.write('Deprecated: yugiohprices.get_low_price')
-	data = get_price_data(card)
-	ls = [version.price.average for version in data if version.price]
-	return sum(ls) / float(len(ls))
+	releases = set()
+	for version in data:
+		releases.add(version.rarity)
+	return list(releases)

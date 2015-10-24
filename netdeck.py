@@ -1,15 +1,17 @@
-from ydklib import tcgplayer, ydk
-import sys
+#!/usr/bin/env python
 """
+usage: python netdeck.py
+
 A command line tool that allows you to download decklists from tcgplayer.com
 Give it a deckid or a url, and it will download the deck, convert it to ydk
 and save it to your ygopro decks folder, making it instantly available\
 in the deck editor.
 
 Uses ydklib.tcgplayer and ydklib.ydk
-
 """
 
+from yugioh import tcgplayer, ygopro
+import sys
 if __name__ == '__main__':
 	if len(sys.argv) < 2:
 		sys.out.write('usage: python netdeck.py url/deckid [deck_name]\n')
@@ -20,6 +22,6 @@ if __name__ == '__main__':
 		deck = tcgplayer.tcgopen(url)
 		if len(sys.argv) > 2:
 			deck.name = sys.argv[2]
-		path = ydk.deck_path(deck.name)
+		path = ygopro.deck_path(deck.name)
 		with open(path, 'w') as fl:
-			ydk.ydksave(deck, fl)
+			ygopro.save_deck(deck, fl)
