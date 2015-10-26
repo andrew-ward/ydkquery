@@ -1,4 +1,4 @@
-# YDKquery
+# YDKTools
 
 A set of Python libraries for reading, writing, and generally working with various decklist formats.
 
