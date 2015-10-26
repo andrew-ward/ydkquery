@@ -1,4 +1,4 @@
-from yugioh import ygopro, decklist
+from . import ygopro, decklist
 
 INPUT = {}
 OUTPUT = {}

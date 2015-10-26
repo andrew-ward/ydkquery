@@ -1,7 +1,7 @@
 """The datatypes holding information about a yugioh deck."""
 
 import collections
-from card import YugiohCard
+from .card import YugiohCard
 
 class YugiohSet(object):
 	"""A set of yugioh cards that can be query'd"""

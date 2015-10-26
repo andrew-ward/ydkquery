@@ -4,7 +4,7 @@ This module is for local file manipulation of deck list files. Mostly implements
 """
 
 import os
-import ygopro
+from . import ygopro
 
 def find_deck(path):
 	"""find_deck(path) -> absolute path

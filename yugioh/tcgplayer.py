@@ -2,12 +2,24 @@
 This provides an interface for opening decks from tcgplayer.com.
 This module does not use the official tcgplayer api, because reasons.
 load_deck accepts a deck id or a url from tcgplayer.com
+
+DEPRECATED
 """
 
-import urllib2
+import sys, re
 from bs4 import BeautifulSoup as bsoup
-import core
-import re
+
+if sys.version_info.major == 2:
+	from urllib2 import urlopen
+elif sys.version_info.major == 3:
+	from urllib.request import urlopen
+else:
+	svi = sys.version_info
+	raise NotImplementedError('Python version {0}.{1}.{3} not supported'.format(svi.major, svi.minor, svi.micro))
+	
+import urllib2
+from . import core
+
 		
 PRINTABLE_URL_TEMPLATE="http://yugioh.tcgplayer.com/db/deck_print.asp?deck_id="
 STANDARD_URL_TEMPLATE="http://yugioh.tcgplayer.com/db/deck.asp?deck_id="
@@ -30,7 +42,7 @@ def load_deck(arg):
 		raise RuntimeError('URL {0} does not point to a yugioh.TCGPlayer.com decklist'.format(arg))
 
 	# grab the html to scrape
-	conn = urllib2.urlopen(url)
+	conn = urlopen(url)
 	html = conn.read()
 	conn.close()
 	

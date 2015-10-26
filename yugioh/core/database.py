@@ -1,9 +1,10 @@
-import enum
-import card
-import deck
-import banlist
-import config
 import sqlite3 as sqlite
+
+from . import enum
+from . import card
+from . import deck
+from . import banlist
+from . import config
 
 class YGOProDatabase(object):
 	"""a wrapper around an sqlite connection to the cards.cdb database."""

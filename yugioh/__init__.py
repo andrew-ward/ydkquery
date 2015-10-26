@@ -1,18 +1,18 @@
 # useful utility libraries that are specific enough to not be in core
-import local
+from . import findpath
 
 
 # the most useful modules.
-import decklist
-import ygopro
-import yugiohprices
+from . import decklist
+from . import ygopro
+from . import yugiohprices
 
-# less useful, but an interesting proof of concept
-import tcgplayer
+# DEPRECATED, to be replaced later
+#from . import tcgplayer
 
 # the module that contains all the low-level datatypes
 # also contains config data
-import core
+from . import core
 
 # non-public resources for other code in the package.
 # Look at them, but don't touch.

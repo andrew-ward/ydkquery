@@ -7,7 +7,7 @@ Reads a .ydk deck listing and calculates the expected price of the main, extra, 
 In the future, I might add more customization to this. For now, if you need something more complicated, you'll have to use the yugioh.yugiohprices api manually.
 """
 
-from yugioh import yugiohprices, ygopro, local
+from yugioh import yugiohprices, ygopro, findpath
 import sys, os
 import locale
 
@@ -65,7 +65,7 @@ if __name__ == '__main__':
 	path = args.deckname
 	locale.setlocale(locale.LC_ALL, '')
 	
-	full_path = local.find_deck(path)
+	full_path = findpath.find_deck(path)
 	
 	if full_path == None:
 		raise RuntimeError('Invalid deck name {0}'.format(path))

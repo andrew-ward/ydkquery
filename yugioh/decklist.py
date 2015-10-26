@@ -18,7 +18,7 @@ Side Deck
 	Mystical Space Typhoon x3
 
 """
-from core import database, deck
+from .core import database, deck
 import re
 def load_deck(flname, db_path=None):
 	"""load_deck(absolute path, absolute path) -> core.deck.YugiohDeck

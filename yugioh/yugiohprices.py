@@ -4,10 +4,19 @@ A frontend for the yugiohprices api. Gets price data on a card.
 May eventually create a more in-depth query library that uses this api.
 """
 
-import urllib, json
+import json
 import sys
-import core, price
+from . import core, price
 
+if sys.version_info.major == 2:
+	from urllib import urlopen, quote_plus
+elif sys.version_info.major == 3:
+	from urllib.request import urlopen
+	from urllib.parse import quote_plus
+else:
+	svi = sys.version_info
+	raise NotImplementedError('Python version {0}.{1}.{3} not supported'.format(svi.major, svi.minor, svi.micro))
+	
 class APIError(RuntimeError): pass
 
 def get_price_data(card):
@@ -21,11 +30,14 @@ def get_price_data(card):
 	else:
 		cardname = card
 		
-	cname = urllib.quote_plus(cardname)
+	cname = quote_plus(cardname)
 	url = 'http://yugiohprices.com/api/get_card_prices/{0}'.format(cname)
 	
-	fl = urllib.urlopen(url)
-	text = fl.read()
+	fl = urlopen(url)
+	if sys.version_info.major == 3:
+		text = fl.readall().decode('utf-8')
+	else:
+		text = fl.read()
 	
 	info = json.loads(text)
 	

@@ -1,5 +1,5 @@
 import re
-import config
+from . import config
 
 class ParseError(RuntimeError): pass
 
@@ -70,12 +70,3 @@ def load_banlists(banlist_path=None):
 			bl = Banlist(name, forbidden, limited, semi_limited)
 			banlists.append(bl)
 		return banlists
-			
-
-			
-if __name__ == '__main__':
-	tcg = load_banlists('/home/owner/Applications/ygopro-1.033.6-Percy/lflist.conf')
-	first = tcg[0]
-	print first
-	for cid in first.semi_limited:
-		print cid

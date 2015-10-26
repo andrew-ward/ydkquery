@@ -10,7 +10,7 @@ If OUTPUT is a path, it will convert and save the new deck file to that path.
 """
 
 import sys, os
-from yugioh import ygopro, converters, local
+from yugioh import ygopro, converters, findpath
 
 	
 def _find_output(arg):
@@ -40,8 +40,8 @@ if __name__ == '__main__':
 	
 	args = parser.parse_args()
 	
-	infile = local.find_deck(args.input_path)
-	infmt = local.find_format(args.input_path)
+	infile = findpath.find_deck(args.input_path)
+	infmt = findpath.find_format(args.input_path)
 	if infile == None:
 		raise RuntimeError('Could not find deck {0}'.format(args.input_path))
 		

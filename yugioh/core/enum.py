@@ -4,6 +4,8 @@ Nobody other than ygopro.py should ever need to import this.
 Got a lot of help from https://www.ygopro.co/Forum/tabid/95/g/posts/t/120/Adding-cards-to-YGOPro--Tutorial----Scripting-video-Added.
 """
 
+# This whole page is a mess. I'll clean it up if it ends up biting me in the butt.
+
 MAGIC_NUMBERS = {
 	'attribute' : {
 		'N/A'   : 0,

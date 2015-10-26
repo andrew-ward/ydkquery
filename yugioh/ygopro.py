@@ -4,7 +4,7 @@ as well as searching the ygopro database for cards.
 """
 
 import os
-import core
+from . import core
 
 class YGOProError(RuntimeError): pass
 
