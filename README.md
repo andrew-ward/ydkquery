@@ -15,8 +15,9 @@ There are also some example applications using the library.
 `ygo-convert` is a command line application that converts deck lists from one format to another. Supports converting to and from ydk, text, and markdown. Also will automatically look for decks in the ygopro deck folder, allowing you to use the raw deck name, instead of a full path.
 
 Some additions I plan to add in the future:
-	- an alternate backend using the yugioh wikia, instead of ygopro, for card data.
-	- a crawler for yugiohtopdecks.com, to make some of that information available programmatically.
-	- a more powerful search/query language, so users can search for cards without using sql queries or a `[x for x in database.all() if ...]` form.
+
++ an alternate backend using the yugioh wikia, instead of ygopro, for card data.
++ a crawler for yugiohtopdecks.com, to make some of that information available programmatically.
++ a more powerful search/query language, so users can search for cards without using sql queries or a `[x for x in database.all() if ...]` form.
 
 Also, for more great yugioh sources, check out yugiohprices.com, yugiohtopdecks.py, and yugiohdeckbuilder.com. They have a lot of stuff similar to what I've made, albeit as a website.
