@@ -8,6 +8,6 @@ setup(
 	description = 'Yugioh deck manipulation library',
 	author = 'AW',
 	url='https://github.com/aw-init/ydkquery',
-	packages=['yugioh', 'consistlib'],
-	scripts=['convert.py', 'pricecheck.py']
+	packages=['yugioh'],
+	scripts=['convert', 'pricecheck']
 )

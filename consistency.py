@@ -6,7 +6,7 @@ for more implementation details.
 
 """
 
-from consistlib import Cardset
+from yugioh.consist import Cardset
 from yugioh import ygopro
 
 if __name__ == '__main__':
