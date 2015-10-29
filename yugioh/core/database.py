@@ -245,26 +245,17 @@ database row is tuple of (name, desc, id, ot, alias, setcode, type, atk, def, le
 
 	def __init__(self, name, text, cid, blist_info, ot, alias, setcode, category, attribute, race, attack, defense, level, lscale=None, rscale=None):
 		card.YugiohCard.__init__(self, name, text, cid, blist_info, category, attribute, race, attack, defense, level, lscale, rscale)
-		# these are only really relevant to ygopro.
-		self._alias_data = alias
-		self._ot_data = ot
-		self._setcode_data = setcode
+		# these are only relevant to ygopro.
+		"""This marks cards with multiple artworks. (int)"""
+		self.alias = alias
+		
+		"""get the location that this card is playable in. (i.e. TCG exclusive, OCG exclusive, Anime card, etc) (string)"""
+		self.availability = enum.get_string('banlist', self._ot_data)
+		
+		"""This marks what archetype a card belongs to. Multi-archtype cards makes this too complicated to deal with right now. (int)"""
+		# if two cards have the same setcode, they belong to the same archetypes.
+		self.setcode = setcode
 	
-	# only available for cards gotten from the database
-	def availability(self):
-		"""self.availability() -> string
-get the location that this card is playable in. (i.e. TCG exclusive, OCG exclusive, Anime card, etc)"""
-		return enum.get_string('banlist', self._ot_data)
-		
-	def alias(self):
-		"""self.alias() -> int
-This marks cards with multiple artworks. Should be unnecessary to deal with."""
-		return self._alias_data
-		
-	def setcode(self):
-		"""self.setcode() -> int
-This marks what archetype a card belongs to. Multi-archtype cards makes this too complicated to deal with right now."""
-		return self._setcode_data
 
 
 def database(db_path = None):

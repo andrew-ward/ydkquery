@@ -75,3 +75,6 @@ def load_card(name, db_path=None):
 	if card == None:
 		raise YGOProError('Could not find card {0}'.format(name))
 	return card
+
+def database(db_path=None):
+	return core.database.database(db_path)

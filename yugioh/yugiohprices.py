@@ -74,10 +74,21 @@ def get_price_data(card):
 		return versions
 
 def rarities(card):
-	"""rarities(core.deck.YugiohDeck) -> string list
+	"""rarities(core.card.YugiohCard) -> string list
 	Return a list of all rarities the card is available in"""
 	data = get_price_data(card)
 	releases = set()
 	for version in data:
 		releases.add(version.rarity)
 	return list(releases)
+
+def get_price(card):
+	"""get_price(core.card.YugiohCard) -> int (dollars)
+get the minimum expected price for the given card"""
+	card_data = get_price_data(card)
+	return min([version.price.low for version in card_data])
+
+def get_prices(cards):
+	"""get_prices(core.card.YugiohCard iterable) -> int (dollars) list
+get the minimum expected price for the given cards"""
+	return [get_price(card) for card in cards]
