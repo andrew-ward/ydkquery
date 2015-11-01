@@ -7,16 +7,27 @@ import os
 from . import ygopro
 
 def find_deck(path):
-	"""find_deck(path) -> absolute path
-	determine location of the deck file """
-	for subpath in [path, ygopro.deck_path(path)]:
+	"""Determine location of the deck file. If it can't find the deck, search the ygopro deck directory.
+	
+:param path: expected path to the deck
+:type path: string
+:returns: absolute path to the deck. Return None if not found.
+:rtype: string"""
+	_, ext = os.path.splitext(path)
+	if ext == '':
+		path = path + '.ydk'
+	for subpath in [os.path.abspath(path), ygopro.deck_path(path)]:
 		if os.path.exists(subpath):
 			return subpath
-	return None
+	raise IOError('No file found named {0}'.format(path))
 
 def find_format(path):
-	"""find_format(path) -> file extension
-	find what format the given deck is saved in."""
+	"""Determine format of the deck file. (.ydk, .txt, and .md are currently supported)
+	
+:param path: expected path to the deck
+:type path: string
+:returns: extension format of the deck.
+:rtype: string"""
 	deckpath = find_deck(path)
 	_, ext = os.path.splitext(deckpath)
 	if ext == '':

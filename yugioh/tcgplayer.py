@@ -25,9 +25,13 @@ PRINTABLE_URL_TEMPLATE="http://yugioh.tcgplayer.com/db/deck_print.asp?deck_id="
 STANDARD_URL_TEMPLATE="http://yugioh.tcgplayer.com/db/deck.asp?deck_id="
 
 def load_deck(arg):
-	"""load_deck(string url OR string/int deck id) -> core.deck.YugiohDeck?
+	"""Gets a YugiohDeck of the deck at the given url. Also 
 	
-	returns a YugiohDeck of the deck at the given url. Also supports opening two kinds of url, as well as raw deck id."""
+:param arg: The url or deck id of the deck. Supports opening two kinds of url, as well as raw deck id.
+:type arg: string or int
+:returns: the deck
+:rtype: core.deck.YugiohDeck
+	"""
 	if isinstance(arg, int) or arg.isdigit():
 		url = PRINTABLE_URL_TEMPLATE+str(arg)
 	elif arg.startswith(STANDARD_URL_TEMPLATE):

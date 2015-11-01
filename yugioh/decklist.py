@@ -1,28 +1,33 @@
 """
-This module supports reading and writing to text deck lists.
-The first line is the deck title.
-An author can by set by a line beginning with "by", and then the author's name.
-Card names are entered one per line, and either followed or preceded by the number of copies.
-Any line beginning with Main, Extra, or Side begins the appropriate section.
-Line comments can be added by starting a line with # or //
-Example:
-Yugi's Deck
-by Yugi Moto
-Main Deck
-	Alpha, The Magnet Warrior x1
-	Gamma, The Magnet Warrior x1
-	Beta, The Magnet Warrior x1
-Extra Deck
-	Number 39: Utopia x1
-Side Deck
-	Mystical Space Typhoon x3
+This module supports reading and writing to text deck lists. The first line is the deck title. An author can by set by a line beginning with "by", and then the author's name. Card names are entered one per line, and either followed or preceded by the number of copies. Any line beginning with Main, Extra, or Side begins the appropriate section. Line comments can be added by starting a line with # or //
+
+Example: ::
+
+	Yugi's Deck
+	by Yugi Moto
+	Main Deck
+		Alpha, The Magnet Warrior x1
+		Gamma, The Magnet Warrior x1
+		// this one has the most attack
+		Beta, The Magnet Warrior x1
+	Extra Deck
+		Number 39: Utopia x1
+	Side Deck
+		# mst negates
+		Mystical Space Typhoon x3
+
 
 """
 from .core import database, deck
 import re
+
 def load_deck(flname, db_path=None):
-	"""load_deck(absolute path, absolute path) -> core.deck.YugiohDeck
-	Reads the file and returns a new deck representing the contents."""
+	"""Reads the file and returns a new deck representing the contents.
+
+	:param flname: the absolute path to the deck
+	:type flname: string
+	:returns: the deck
+	:rtype: core.deck.YugiohDeck"""
 	lines = None
 	with open(flname) as fl:
 		lines = fl.readlines()
@@ -66,10 +71,15 @@ def load_deck(flname, db_path=None):
 			if card:
 				current.add_card(card, int(count))
 			else:
-				raise RuntimeError('Unknown card {0}'.format(name))
+				raise database.CardNotFoundError('Unknown card {0}'.format(name))
 	return blank_deck
 	
 def save_deck(deck, fl):
-	"""save_deck(core.deck.YugiohDeck, file) -> None
-	Save a YugiohDeck as a text file"""
+	"""Write the given deck to file as a text decklist.
+	
+:param deck: the deck
+:type deck: core.deck.YugiohDeck
+:param fl: the output file
+:type fl: file
+:returns: None"""
 	fl.write(deck.as_decklist())

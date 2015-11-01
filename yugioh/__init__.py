@@ -7,8 +7,8 @@ from . import decklist
 from . import ygopro
 from . import yugiohprices
 
-# DEPRECATED, to be replaced later
-#from . import tcgplayer
+# the consistency checker tool
+from . import consist
 
 # the module that contains all the low-level datatypes
 # also contains config data

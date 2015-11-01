@@ -1,41 +1,65 @@
+"""Holds datatype for yugioh cards"""
 import collections
 class YugiohCard(object):
-	""" holds all the data of a single yugioh card. """
+	""" holds all the data of a single yugioh card.
+	
+	:ivar name: full name of the card
+	:vartype name: string
+	
+	:ivar text: text on the card
+	:vartype text: string
+	
+	:ivar category: a text string that says what kind of card it is (i.e. Normal Spell, Counter Trap, Synchro Monster, etc)
+	:vartype category: string
+	
+	:ivar cid: the unique card id
+	:vartype cid: string
+	
+	:ivar attribute: the attribute of the monster
+	:vartype attribute: string
+	
+	:ivar type: the type of the monster
+	:vartype type: string
+	
+	:ivar level: the level/rank of the monster
+	:vartype level: int
+	
+	:ivar attack: the attack stat of the monster. ? attack is negative
+	:vartype attack: int
+	
+	:ivar defense: the defense stat of the monster. ? defense is negative
+	:vartype defense: int
+	
+	:ivar left_scale: The left pendulum scale of the monster
+	:vartype left_scale: int
+	
+	:ivar right_scale: The right pendulum scale of the monster
+	:vartype right_scale: int
+	"""
 	def __init__(self, name, text, cid, banlist_status, category, attribute, race, attack, defense, level, lscale=None, rscale=None):
-		"""full name of the card (string)"""
 		self.name = name
 		
-		"""text on the card (string)"""
 		self.text = text
 		
-		"""a text string that says what kind of card it is (i.e. Normal Spell, Counter Trap, Synchro Monster, etc) (string)"""
 		self.category = category
 		
-		"""the unique card id (string)"""
 		self.cid = cid		
 		
 		self._banlist_status = banlist_status
 				
 		# only exist for monsters
-		"""the attribute of the monster (string)"""
 		self.attribute = attribute if attribute != "N/A" else None
 		
-		"""the type of the monster (string)"""
 		self.type = race if race != "N/A" else None
 		
-		"""the level/rank of the monster (int)"""
 		self.level = level if level > 0 else None
 		
-		"""the attack stat of the monster. ? attack is negative (int)"""
 		self.attack = attack if 'Monster' in self.category else None
 		
-		"""the defense stat of the monster. ? defense is negative (int)"""
 		self.defense = defense if 'Monster' in self.category else None
 		
-		"""The left pendulum scale of the monster (int)"""
 		self.left_scale = lscale
 		
-		"""The right pendulum scale of the monster (int)"""
 		self.right_scale = rscale
 		
 		
@@ -44,76 +68,131 @@ class YugiohCard(object):
 	def __eq__(self, other):
 		return isinstance(other, YugiohCard) and self.cid == other.cid
 		
+	def __iter__(self):
+		return iter(self.as_dict().items())
+	def __getitem__(self, key):
+		return self.as_dict()[key]
+		
 	def __repr__(self):
 		return 'YugiohCard({0})'.format(self.name)
 	def __str__(self):
 		return self.name
 		
+	def as_dict(self):
+		"""Get the card data as a python dict, for conversion to json.
+		
+		:returns: the card as a dict.
+		:rtype: dict"""
+		return {
+			'name' : self.name,
+			'text' : self.text,
+			'category' : self.category,
+			'cid' : self.cid,
+			'type' : self.type,
+			'attribute' : self.attribute,
+			'level' : self.level,
+			'attack' : self.attack,
+			'defense' : self.defense,
+			'left_scale' : self.left_scale,
+			'right_scale' : self.right_scale,
+			'banlist' : self._banlist_status
+		}
+			
+		
+	def get(self, key):
+		"""Get attribute of the card by string instead of direct indexing. Mostly used internally. Roughly equivalent to getattr(obj, attr)
+		
+		:param key: the name of the attribute to get.
+		:type key: string
+		:returns: information about the card."""
+		return self.as_dict()[key]
+		
 	def is_monster(self):
-		"""self.is_monster() -> bool
-returns True if card is a monster card"""
+		"""
+		:returns: True if card is a monster card
+		:rtype: boolean"""
 		return 'Monster' in self.category
 		
 	def is_spell(self):
-		"""self.is_spell() -> bool
- returns True if card is a spell card"""
+		"""
+		:returns: True if card is a spell card
+		:rtype: boolean"""
 		return 'Spell' in self.category
 		
 	def is_trap(self):
-		"""self.is_trap() -> bool
-returns True if card is a trap card"""
+		"""
+		:returns: True if card is a trap card
+		:rtype: boolean"""
 		# damn son, where'd you find this?
 		return 'Trap' in self.category
 		
 	def is_pendulum(self):
-		"""self.is_pendulum() -> bool
-returns True if card is a pendulum monster card"""
+		"""
+		:returns: True if card is a pendulum card
+		:rtype: boolean"""
 		return 'Pendulum' in self.category
 		
 	def is_synchro(self):
-		"""self.is_synchro() -> bool
-returns True if card is a synchro monster card"""
+		"""
+		:returns: True if card is a synchro card
+		:rtype: boolean"""
 		return 'Synchro' in self.category
 		
 	def is_xyz(self):
-		"""self.is_xyz() -> bool
-returns True if card is an xyz monster card"""
+		"""
+		:returns: True if card is an xyz card
+		:rtype: boolean"""
 		return 'Xyz' in self.category
 		
 	def is_tuner(self):
-		"""self.is_tuner() -> bool
-returns True if card is a tuner"""
+		"""
+		:returns: True if card is a tuner card
+		:rtype: boolean"""
 		return 'Tuner' in self.category
 		
 	def is_effect_monster(self):
-		"""self.is_effect_monster() -> bool
-returns True if card is a monster with an effect"""
+		"""
+		:returns: True if card is an effect monster card
+		:rtype: boolean"""
 		return 'Effect' in self.category
 		
 	def is_normal_monster(self):
-		"""self.is_normal_monster() -> bool
-returns True if card is a Normal monster. This is not the same as a monster without an effect."""
+		"""
+		:returns: True if card is a monster card. This is not the same as a monster without an effect.
+		:rtype: boolean """
 		return self.category in ['Normal-Monster', 'Token']
 		
 	def is_ritual_monster(self):
-		"""self.is_ritual_monster() -> bool
-returns True if card is a Ritual Monster"""
+		"""
+		:returns: True if card is a Ritual monster card
+		:rtype: boolean"""
 		return self.is_monster and 'Ritual' in self.category()
 		
 	def is_legal(self, banlist='TCG'):
+		"""
+		:param banlist: what banlist you are asking about.
+		:type banlist: string
+		:returns: True if card is legal on the given banlist
+		:rtype: boolean"""
 		return self.allowed() > 0
 		
 	def allowed(self, banlist='TCG'):
-		"""self.allowed(string banlist) -> (0 <= int <= 3)
-return the number of copies allowed in a deck according to the given banlist."""
+		"""
+		:param banlist: what banlist you are asking about.
+		:type banlist: string
+		:returns: How many copies are allowed on the given banlist.
+		:rtype: int"""
 		for key in self._banlist_status:
 			if banlist.upper() in key:
 				return self._banlist_status[key]
 		raise KeyError('No banlist called {0}'.format(banlist))
 
 	def banlist_status(self, banlist='TCG'):
-		"""self.banlist_status() -> string (unlimited|semi-limited|limited|forbidden)
-return text representation of how many are allowed under a given banlist"""
+		"""
+		:param banlist: what banlist you are asking about.
+		:type banlist: string
+		:returns: The status of this card on the banlist
+		:rtype: "unlimited" or "semi-limited" or "limited" or "forbidden" """
 		n = self.allowed(banlist)
 		if n == 0:
 			return 'forbidden'

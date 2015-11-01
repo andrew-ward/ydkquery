@@ -20,7 +20,7 @@ Algorithm:
 		determine the number of ways to draw those hands, and divide
 		that by the total number of possible hands.
 """
-from interface import all_cards, count_all, size
+from .interface import all_cards, count_all, size
 def choose(n, k):
 	# classic combinatorics function.
 	# see https://en.wikipedia.org/wiki/Combination

@@ -9,15 +9,22 @@ from . import core
 class YGOProError(RuntimeError): pass
 
 def save_deck(deck, fl):
-	"""save_deck(core.deck.YugiohDeck, file)
+	"""Write the given deck to file as a ydk.
 	
-	takes a YugiohDeck, converts to ydk, and writes to a file."""
+:param deck: the deck
+:type deck: core.deck.YugiohDeck
+:param fl: the output file
+:type fl: file
+:returns: None"""
 	fl.write(deck.as_ydk())
 
 def deck_path(deck_name=None):
-	"""deck_path(string) -> absolute path
-	
-	uses the paths module to turn the name of a deck as you would see it in ygopro, to a filename and absolute path."""
+	"""Get path to deck in the ygopro deck directory from deck name.
+
+:param deck_name: the name of the deck.
+:type deck_name: string
+:returns: absolute path into the ygopro deck directory
+:rtype: string"""
 	if deck_name == None:
 		return core.config.DECK_DIRECTORY
 	else:
@@ -27,9 +34,14 @@ def deck_path(deck_name=None):
 
 
 def load_deck(path, db_path=None):
-	"""load_deck(absolute path deck, absolute path database) -> core.deck.YugiohDeck
+	"""Opens and parses a .ydk file. Uses ygopro.YGOProDatabase to figure out what card cooresponds to the given card id. 
 	
-	  opens and parses a .ydk file. Uses ygopro.YGOProDatabase to figure out what card cooresponds to the given card id. """
+:param path: absolute path to the deck
+:type path: string
+:param db_path: absolute path to the ygopro card database
+:type db_path: string
+:returns: the deck
+:rtype: core.deck.YugiohDeck"""
 	  
 	if not isinstance(path, str):
 		raise TypeError('yugioh.ygopro.load_deck({0})'.format(path))
@@ -66,15 +78,25 @@ def load_deck(path, db_path=None):
 	return core.deck.YugiohDeck(name, author, main, side, extra)
 
 def load_card(name, db_path=None):
-	"""load_card(string card_name, absolute path database) -> core.card.YugiohCard
+	"""Get the card with the given name from the ygopro database.
 	
-	get the card with the given name from the ygopro database """
+:param path: full name of the card
+:type path: string
+:param db_path: absolute path to the ygopro card database
+:type db_path: string
+:returns: the card
+:rtype: core.card.YugiohCard
+:raises: core.database.CardNotFoundException"""
 	db = core.database.database(db_path)
 	card = db.find(name, by='name')
 	db.close()
-	if card == None:
-		raise YGOProError('Could not find card {0}'.format(name))
 	return card
 
 def database(db_path=None):
+	"""Get a new handle to the ygopro card database.
+	
+:param db_path: absolute path to the ygopro card database
+:type db_path: string
+:returns: the database handle
+:rtype: core.database.YGOProDatabase"""
 	return core.database.database(db_path)

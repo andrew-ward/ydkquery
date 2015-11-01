@@ -70,6 +70,12 @@ def get_yugiohprices_data(cardname = "Gradius"):
 	from yugioh import yugiohprices
 	pdat = yugiohprices.get_price_data(cardname)
 	print('  price data: {0}'.format(pdat))
+	
+@test('konami_banlist')
+def get_banlist():
+	from yugioh.core import konami_banlist
+	bl = konami_banlist.load_tcg_banlist()
+	print bl
 
 if __name__ == '__main__':
 	if len(sys.argv) < 2:

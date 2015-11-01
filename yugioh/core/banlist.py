@@ -1,9 +1,15 @@
+"""This module is for managing the banlist (lflist.conf) files supplied by ygopro."""
 import re
 from . import config
 
-class ParseError(RuntimeError): pass
+class ParseError(RuntimeError):
+	pass
 
 class Banlist(object):
+	"""Holds all the information for a single banlist.
+	
+	:ivar name: the name of the banlist
+	:vartype name: string"""
 	def __init__(self, name, f, l, s):
 		self.name = name
 		self._cards = {}
@@ -19,18 +25,71 @@ class Banlist(object):
 		return self.name
 	def __getitem__(self, cid):
 		return self._cards.get(cid, 3)
+		
+	def forbidden_cards(self):
+		"""
+		:returns: list of all forbidden cards
+		:type: list of core.card.YugiohCard"""
+		return list(card for (card, n) in self._cards.items() if n == 0)
+		
+	def limited_cards(self):
+		"""
+		:returns: list of all forbidden cards
+		:type: list of core.card.YugiohCard"""
+		return list(card for (card, n) in self._cards.items() if n == 1)
+
+	def semi_limited_cards(self):
+		"""
+		:returns: list of all forbidden cards
+		:type: list of core.card.YugiohCard"""
+		return list(card for (card, n) in self._cards.items() if n == 2)
+		
 	def forbidden(self, cid):
+		"""Check if a card is forbidden
+		
+		:param cid: card id of the card you want to check
+		:type cid: string
+		:returns: whether card is forbidden
+		:rtype: boolean"""
 		return self[cid] == 0
+		
 	def limited(self, cid):
+		"""Check if a card is limited
+		
+		:param cid: card id of the card you want to check
+		:type cid: string
+		:returns: whether card is limited
+		:rtype: boolean"""
 		return self[cid] == 1
+		
 	def semi_limited(self, cid):
+		"""Check if a card is semi_limited
+		
+		:param cid: card id of the card you want to check
+		:type cid: string
+		:returns: whether card is semi_limited
+		:rtype: boolean"""
 		return self[cid] == 2
+		
 	def unlimited(self, cid):
+		"""Check if a card is unlimited
+		
+		:param cid: card id of the card you want to check
+		:type cid: string
+		:returns: whether card is unlimited
+		:rtype: boolean"""
 		return self[cid] == 3
 		
 			
 		
 def load_banlists(banlist_path=None):
+	"""Get every banlist available as a list. Used by yugioh.core.database.
+	
+	:param banlist_path: the path to the lflist.conf supplied by ygopro.
+	:type banlist_path: string
+	
+	:returns: list of all the banlists information available.
+	:rtype: list of Banlist	"""
 	banlist_path = banlist_path or config.BANLIST_PATH
 	with open(banlist_path, 'r') as fl:
 		lines = [x.rstrip() for x in fl.readlines()]

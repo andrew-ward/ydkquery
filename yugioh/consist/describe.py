@@ -1,7 +1,3 @@
-import operator
-import itertools
-import handgen
-from interface import all_cards, count_all, size
 """
 Declares an Abstract Syntax Tree that represents an expression.
 The AST can be built up using python operators, and in the future,
@@ -23,41 +19,64 @@ as there is at least one of that card. Whether that is reliable or
 wanted has yet to be decided.
 
 """
+import operator
+import itertools
+from . import handgen
+from .interface import all_cards, count_all, size
+from ..core.deck import YugiohSet
+
 class SyntaxError(RuntimeError):
 	'''this error is thrown if the user creates an invalid expression'''
 	def __init__(self):
 		RuntimeError.__init__(self, 'SyntaxError'.format(s))
 		
 class AST(object):
-	'''the base class for all the expression building blocks'''
+	'''The base class for all the expression building blocks. Handles creating nested AST.'''
 	
 	def __call__(self, hand):
 		#this should return True if the hand matches this expression. AST is abstract, so it simply fails
 		raise NotImplementedError(type(self))
 		
 	def variables(self):
-		#looks at the contents of this expression, and generates a set of disjoint cardsets.
+		# Generate a disjoint set of cards that are used in this expression"""
 		raise NotImplementedError()
 		
 	# uses operators as expression builders.
 	# these return higher order ASTs
 	# this particular set compares variables to ints
 	def __eq__(self, other):
+		"""The number of occurences of the left-hand expression is equal to other.
+		
+		:param other: the right-hand expression
+		:type other: int"""
 		if isinstance(other, int):
 			return Equal([self, Number(other)])
 		else:
 			return Equal([self, other])			
 	def __lt__(self, other):
+		"""The number of occurences of the left-hand expression is less than to the number of occurences of the right-hand expression.
+		
+		:param other: the right-hand expression
+		:type other: int"""
 		if isinstance(other, int):
 			return LessThan([self, Number(other)])
 		else:
 			return LessThan([self, other])		
 	def __gt__(self, other):
+		"""The number of occurences of the left-hand expression is greater than the number of occurences of the right-hand expression.
+		
+		:param other: the right-hand expression
+		:type other: int"""
 		if isinstance(other, int):
 			return GreaterThan([self, Number(other)])
 		else:
 			return GreaterThan([self, other])	
 	def __and__(self, other):
+		"""Both the left and right expressions are true.
+		
+		:param other: the right-hand expression
+		:type other: consist.describe.AST
+		:raises: SyntaxError"""
 		if isinstance(other, int):
 			raise SyntaxError()
 		elif isinstance(other, And):
@@ -65,6 +84,11 @@ class AST(object):
 		else:
 			return And([self, other])		
 	def __or__(self, other):
+		"""Either the left or right expressions are true..
+		
+		:param other: the right-hand expression
+		:type other: consist.describe.AST
+		:raises: SyntaxError"""
 		if isinstance(other, int):
 			raise SyntaxError()
 		elif isinstance(other, Or):
@@ -73,6 +97,10 @@ class AST(object):
 			return Or([self, other])
 			
 	def __add__(self, other):
+		"""Return the sum of the number of occurences of the left hand expression and the right hand expression..
+		
+		:param other: the right-hand expression
+		:type other: consist.describe.AST"""
 		if isinstance(other, int):
 			return Add([self, Number(other)])
 		elif isinstance(other, Add):
@@ -81,7 +109,12 @@ class AST(object):
 			return Add([self, other])
 			
 	def probability(self, deck, hand_size=5):
-		'''Returns the probability of drawing a hand for which this expression is true, for a given deck. This ties all the pieces together from handgen and describe. '''
+		"""Returns the probability of drawing a hand for which this expression is true, for a given deck. This ties all the pieces together from handgen and describe.
+		
+		:param deck: the deck you are checking consistency of
+		:type deck: yugioh.core.deck.YugiohDeck
+		:param hand_size: the number of cards in your opening hand
+		:type hand_size: int"""
 		variables = self.variables()
 		hands = handgen.generate_hands(variables, deck, hand_size)
 		successes = 0
@@ -90,25 +123,26 @@ class AST(object):
 				successes += hand.combinations(deck, hand_size)
 		return float(successes) / handgen.choose(handgen.size(deck), hand_size)
 
-class Cardset(AST):
-	'''a set of YugiohCards. The fundamental variable of expressions.'''
-	def __init__(self, cset):
-		if cset == None:
+class Cardset(AST, YugiohSet):
+	'''a set of YugiohCards. The fundamental variable of expressions. By combining instances of this card using math expressions, you can create complex expressions to represent good hands.'''
+	def __init__(self, cards_iterable):
+		if cards_iterable == None:
 			raise TypeError("Cardset does not accept NoneType")
-		self.cards = frozenset(cset)
+		else:
+			YugiohSet.__init__(self, cards_iterable)
 	def __str__(self):
-		return '{' + ','.join(str(x) for x in self.cards) + '}'
+		return '{' + ','.join(str(x) for x in self) + '}'
 	def __call__(self, hand):
 		#a lone cardset cannot pass or fail a hand,
 		#so it simply returns the number of cards matching itself in the hand.'''
 		total = 0
 		for term in hand:
-			if self.cards <= term.cardset:
+			if frozenset(self) <= term.cardset:
 				total += term.count
 		return total
 		
 	def variables(self):
-		yield self.cards
+		yield frozenset(self)
 	
 class Number(AST):
 	'''An integer that can be compared with cardsets'''
