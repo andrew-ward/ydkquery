@@ -49,19 +49,7 @@ def _money_fmt(usd):
 	# in the future, do price conversions from usd to locale currency.
 	return locale.currency(usd)
 
-if __name__ == '__main__':
-	import argparse
-	parser = argparse.ArgumentParser(description="Reads a .ydk deck listing and calculates the expected price of the main, extra, and side deck. Price data is from YugiohPrices.com web api.")
-	parser.add_argument('deckname', help='Path to a .ydk deck, or just the name of the deck in the ygopro deck folder.')
-	parser.add_argument('-v', '--verbose', help='print individual card prices', action='store_true')
-	group = parser.add_mutually_exclusive_group()
-	group.add_argument('--low', help='[default] find the lowest price for the deck', action='store_true')
-	group.add_argument('--high', help='find the highest price for the deck', action='store_true')
-	group.add_argument('--average', help='find the price of a deck if you blindly picked cards from the set of all printings.')
-	parser.add_argument('-p', '--prefer', help='find the price while preferring copies of card of a particular rarity. Also suports Holo as a rarity, which prefers anything that isn\'t Common or Rare.')
-	
-	args = parser.parse_args()
-	
+def main(args):		
 	path = args.deckname
 	locale.setlocale(locale.LC_ALL, '')
 	
@@ -115,3 +103,4 @@ if __name__ == '__main__':
 	sys.stdout.write('Extra Deck: ~{0}\n'.format(_money_fmt(extra_price)))
 	sys.stdout.write(' Side Deck: ~{0}\n'.format(_money_fmt(side_price)))
 	sys.stdout.write('     Total: ~{0}\n'.format(_money_fmt(main_price+extra_price+side_price)))
+

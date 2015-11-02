@@ -5,81 +5,33 @@ from . import config
 class ParseError(RuntimeError):
 	pass
 
-class Banlist(object):
+class Banlist(dict):
 	"""Holds all the information for a single banlist.
 	
 	:ivar name: the name of the banlist
 	:vartype name: string"""
 	def __init__(self, name, f, l, s):
 		self.name = name
-		self._cards = {}
-		for cid in f:
-			self._cards[cid] = 0
-		for cid in l:
-			self._cards[cid] = 1
-		for cid in s:
-			self._cards[cid] = 2
+		for thing in f:
+			self[thing] = 0
+		for thing in l:
+			self[thing] = 1
+		for thing in s:
+			self[thing] = 2
 	def __repr__(self):
-		return 'Banlist({0})'.format(self)
+		return 'Banlist({0})'.format(self.name)
 	def __str__(self):
-		return self.name
+		return 'Banlist({0})'.format(self.name)
 	
 	def allowed(self, card):
-		return self._cards.get(card.cid, 3)
+		"""Return how many copies of the card are allowed to be run under this ban list.
 		
-	def forbidden_cards(self):
+		:param card: the card you are checking.
+		:type card: core.YugiohCard
+		:returns: how many copies you can run.
+		:rtype: int
 		"""
-		:returns: list of all forbidden cards
-		:type: list of core.card.YugiohCard"""
-		return list(card for (card, n) in self._cards.items() if n == 0)
-		
-	def limited_cards(self):
-		"""
-		:returns: list of all forbidden cards
-		:type: list of core.card.YugiohCard"""
-		return list(card for (card, n) in self._cards.items() if n == 1)
-
-	def semi_limited_cards(self):
-		"""
-		:returns: list of all forbidden cards
-		:type: list of core.card.YugiohCard"""
-		return list(card for (card, n) in self._cards.items() if n == 2)
-		
-	def forbidden(self, cid):
-		"""Check if a card is forbidden
-		
-		:param cid: card id of the card you want to check
-		:type cid: string
-		:returns: whether card is forbidden
-		:rtype: boolean"""
-		return self[cid] == 0
-		
-	def limited(self, cid):
-		"""Check if a card is limited
-		
-		:param cid: card id of the card you want to check
-		:type cid: string
-		:returns: whether card is limited
-		:rtype: boolean"""
-		return self[cid] == 1
-		
-	def semi_limited(self, cid):
-		"""Check if a card is semi_limited
-		
-		:param cid: card id of the card you want to check
-		:type cid: string
-		:returns: whether card is semi_limited
-		:rtype: boolean"""
-		return self[cid] == 2
-		
-	def unlimited(self, cid):
-		"""Check if a card is unlimited
-		
-		:param cid: card id of the card you want to check
-		:type cid: string
-		:returns: whether card is unlimited
-		:rtype: boolean"""
-		return self[cid] == 3
+		return self.get(card.cid, 3)
 		
 			
 		
