@@ -78,6 +78,31 @@ class YugiohCard(object):
 	def __str__(self):
 		return self.name
 		
+	def description(self):
+		"""Return a formatted string depiction of the card, matching the format of a physical card as much as possible.
+		
+		:returns: A string describing the card.
+		:rtype: string"""
+		output = '{0} ({1})\n'.format(self.name, self.cid)
+		if self.is_monster():
+			output += '{0} {1}\n'.format(self.attribute, '*' * self.level)
+			output += self._type_line() + '\n'
+			output += 'ATK {0}'.format(self.attack if self.attack >= 0 else '?')
+			output += ' / DEF {0}\n'.format(self.defense if self.defense >= 0 else '?')
+		else:		
+			output += self._type_line() + '\n'
+		output += '{0}\n'.format(self.text)
+		return output
+		
+	def _type_line(self):
+		if self.is_monster():
+			types = [self.type]
+			parts = self.category.split('-')[:-1]
+			types.extend(parts)
+			return '/'.join(types)
+		else:
+			return ' '.join(self.category.split('-'))
+		
 	def as_dict(self):
 		"""Get the card data as a python dict, for conversion to json.
 		
@@ -143,6 +168,12 @@ class YugiohCard(object):
 		:returns: True if card is an xyz card
 		:rtype: boolean"""
 		return 'Xyz' in self.category
+		
+	def is_fusion(self):
+		"""
+		:returns: True if card is an xyz card
+		:rtype: boolean"""
+		return 'Fusion' in self.category
 		
 	def is_tuner(self):
 		"""

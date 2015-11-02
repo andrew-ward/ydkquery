@@ -62,6 +62,9 @@ class PriceHistory(object):
 class CardVersion(object):
 	"""Represents all the information available for a single print run of a card.
 
+:ivar name: The card this is a print of.
+:vartype name: string
+
 :ivar set_name: The set the card came out in.
 :vartype set_name: string
 
@@ -74,7 +77,9 @@ class CardVersion(object):
 :ivar price: The price of the card.
 :vartype price: PriceHistory
 """
-	def __init__(self, set_name, print_tag, rarity, price):
+	def __init__(self, card_name, set_name, print_tag, rarity, price):
+		
+		self.name = card_name
 		
 		self.set_name = set_name
 		

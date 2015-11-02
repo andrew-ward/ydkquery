@@ -77,18 +77,20 @@ def load_deck(path, db_path=None):
 	db.close()
 	return core.deck.YugiohDeck(name, author, main, side, extra)
 
-def load_card(name, db_path=None):
+def load_card(name, by='name', db_path=None):
 	"""Get the card with the given name from the ygopro database.
 	
 :param path: full name of the card
 :type path: string
+:param by: how you want to get the card.
+:type by: "name" or "id"
 :param db_path: absolute path to the ygopro card database
 :type db_path: string
 :returns: the card
 :rtype: core.card.YugiohCard
 :raises: core.database.CardNotFoundException"""
 	db = core.database.database(db_path)
-	card = db.find(name, by='name')
+	card = db.find(name, by=by)
 	db.close()
 	return card
 
