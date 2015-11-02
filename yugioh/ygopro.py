@@ -108,3 +108,12 @@ def database(db_path=None):
 :returns: the database handle
 :rtype: core.database.YGOProDatabase"""
 	return core.database.database(db_path)
+
+def all_cards(db_path=None):
+	"""Get all cards in the ygopro database.
+	
+:param db_path: absolute path to the ygopro card database
+:type db_path: string
+:returns: list of every card in the database
+:rtype: list of core.database.YGOProCard"""
+	return core.database.all_cards(db_path)

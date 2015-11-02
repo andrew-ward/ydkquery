@@ -107,7 +107,7 @@ def load_card(print_tag):
 	if not re.match('^[A-Z0-9]+-[A-Z]*[0-9]+$', print_tag):
 		raise APIError('{0} is not a valid print tag.'.format(print_tag))
 	cname = quote_plus(print_tag)
-	url = 'http://yugiohprices.com/api/get_card_prices/{0}'.format(cname)
+	url = 'http://yugiohprices.com/api/price_for_print_tag/{0}'.format(cname)
 	
 	fl = urlopen(url)
 	if sys.version_info.major == 3:
