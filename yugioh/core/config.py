@@ -8,8 +8,35 @@ certain files on your computer.
 
 :var DECK_DIRECTORY: path to the ygopro deck directory.
 """
+import os
+import json
+from .configuration import ConfigurationError
+	
+DATABASE_PATH = None
+BANLIST_PATH = None
+DECK_DIRECTORY = None
 
-DATABASE_PATH = "/home/owner/Applications/ygopro-1.033.6-Percy/cards.cdb"
-BANLIST_PATH = "/home/owner/Applications/ygopro-1.033.6-Percy/lflist.conf"
-DECK_DIRECTORY = "/home/owner/Applications/ygopro-1.033.6-Percy/deck/"
+
+this_directory = os.path.dirname(os.path.realpath(__file__))
+config_flname = os.path.join(this_directory, 'config.json')
+if not os.path.exists(config_flname):
+	raise IOError('Cannot locate the yugioh.core configuration file (config.json)')
+
+with open(config_flname) as fl:
+	info = json.load(fl)
+	
+	if os.path.exists(info['DATABASE_PATH']):
+		DATABASE_PATH = info['DATABASE_PATH']
+	else:
+		DATABASE_PATH = None
+		
+	if os.path.exists(info['BANLIST_PATH']):
+		BANLIST_PATH = info['BANLIST_PATH']
+	else:
+		BANLIST_PATH = None
+		
+	if os.path.exists(info['DECK_DIRECTORY']):
+		DECK_DIRECTORY = info['DECK_DIRECTORY']
+	else:
+		DECK_DIRECTORY = None
 

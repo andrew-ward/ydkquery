@@ -6,7 +6,11 @@ sys.path.insert(0, '..')
 import yugioh
 class TestCore(unittest.TestCase):
 	def assertPath(self, path):
-		self.assertTrue(os.path.exists(path))
+		try:
+			self.assertIsNotNone(path)
+			self.assertTrue(os.path.exists(path))
+		except AssertionError:
+			raise AssertionError('{0} is not an existing path.'.format(path))
 		
 	def test_config(self):	
 		self.assertPath(yugioh.core.config.DATABASE_PATH)

@@ -92,6 +92,8 @@ def load_banlists(banlist_path=None):
 	:returns: list of all the banlists information available.
 	:rtype: list of Banlist	"""
 	banlist_path = banlist_path or config.BANLIST_PATH
+	if banlist_path == None:
+		raise IOError('Cannot access banlist. Check your configuration.')
 	with open(banlist_path, 'r') as fl:
 		lines = [x.rstrip() for x in fl.readlines()]
 		banlists = []

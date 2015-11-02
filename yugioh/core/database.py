@@ -17,11 +17,11 @@ class YGOProDatabase(object):
 	def __init__(self, cardscdb=None, banlists = None):
 		self.db_path = cardscdb or config.DATABASE_PATH
 		
+		if self.db_path == None:
+			raise IOError('Cannot access database. Check your configuration.')
+		
 		# a list of banlist.Banlist objects.
 		self.banlist_data = banlists or banlist.load_banlists(config.BANLIST_PATH)
-		
-		if self.db_path == None:
-			raise IOError('Cannot access database at {0}'.format(self.db_path))
 		
 		# with most of the query methods, it will open a connection if you
 		# don't already have one - even if you explicitly closed it.
@@ -51,9 +51,6 @@ class YGOProDatabase(object):
 	def __exit__(self, t, value, traceback):
 		self.close()
 		return False
-		
-	def __del__(self):
-		self.close()
 			
 	def __make_card(self, row):
 		return YGOProCard.from_row(self.banlist_data, row)

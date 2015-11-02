@@ -1,3 +1,4 @@
+from . import configuration
 from . import config
 from . import card
 from . import deck
