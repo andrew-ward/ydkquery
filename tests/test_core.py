@@ -26,7 +26,7 @@ class TestCore(unittest.TestCase):
 			self.assertTrue(len(banlist.semi_limited_cards()) > 0)
 			
 	def test_database(self):
-		db = yugioh.core.database.YGOProDatabase(yugioh.core.config.DATABASE_PATH, yugioh.core.config.BANLIST_PATH)
+		db = yugioh.core.database.YGOProDatabase(yugioh.core.config.DATABASE_PATH, yugioh.core.banlist.load_banlists(yugioh.core.config.BANLIST_PATH))
 		db.open()
 		
 		unicore = db.find('44155002', by='id')

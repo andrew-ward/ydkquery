@@ -14,9 +14,12 @@ class InvalidQueryError(RuntimeError):
 
 class YGOProDatabase(object):
 	"""a wrapper around an sqlite connection to the cards.cdb database."""
-	def __init__(self, cardscdb=None, banlist_path=None):
+	def __init__(self, cardscdb=None, banlists = None):
 		self.db_path = cardscdb or config.DATABASE_PATH
-		self.banlist_data = banlist.load_banlists(banlist_path)
+		
+		# a list of banlist.Banlist objects.
+		self.banlist_data = banlists or banlist.load_banlists(config.BANLIST_PATH)
+		
 		if self.db_path == None:
 			raise IOError('Cannot access database at {0}'.format(self.db_path))
 		
@@ -193,61 +196,6 @@ class YGOProDatabase(object):
 		result = cursor.fetchone()
 		return str(result[0] + 1)
 
-
-# http://stevehanov.ca/blog/index.php?id=114
-# not my code, but given as example by the above blog post.	
-def levenshtein( word1, word2 ):
-	"""
-	:param word1: the first word
-	:type word1: string
-	:param word2: the second word
-	:type word2: string
-	:returns: the number of edits required to get from word1 to word2.
-	:rtype: int"""
-	columns = len(word1) + 1
-	rows = len(word2) + 1
-
-	# build first row
-	currentRow = [0]
-	for column in xrange( 1, columns ):
-		currentRow.append( currentRow[column - 1] + 1 )
-
-	for row in xrange( 1, rows ):
-		previousRow = currentRow
-		currentRow = [ previousRow[0] + 1 ]
-
-		for column in xrange( 1, columns ):
-
-			insertCost = currentRow[column - 1] + 1
-			deleteCost = previousRow[column] + 1
-
-			if word1[column - 1] != word2[row - 1]:
-				replaceCost = previousRow[ column - 1 ] + 1
-			else:                
-				replaceCost = previousRow[ column - 1 ]
-
-			currentRow.append( min( insertCost, deleteCost, replaceCost ) )
-	return currentRow[-1]
-
-#Not very reliable, but better than nothing.
-# working on a better way to do this.
-def levenshtein_match(name, cards):
-	"""Use the Levenshtein algorithm to find the card with the most similar name.
-	
-	:param name: The name of the card I'm looking for.
-	:type name: string
-	:param cards: all the cards to look through.
-	:type cards: list of card.YugiohCard
-	:returns: the card whose name is most similar to `name`
-	:rtype: card.YugiohCard"""
-	bestcard, minlev = None, len(name)
-	for card in cards:
-		lev = levenshtein(name, card.name())
-		if lev < minlev:
-			bestcard = card
-			minlev = lev
-	return bestcard
-
 class YGOProCard(card.YugiohCard):
 	"""A YugiohCard with extra information from the ygopro database.
 	
@@ -266,47 +214,62 @@ class YGOProCard(card.YugiohCard):
 		:type banlist_data: banlist.Banlist
 		:param row: a row from the sql database
 		:type row: name, desc, id, ot, alias, setcode, type, atk, def, level, race, attribute, category"""
-		# someday I'll clean this up, but for now,
-		# abandon hope all ye who enter here.
-		'''
-			name : row[0]
-			desc : row[1]
-			id : row[2]
-			ot : row[3]
-			alias : row[4]
-			setcode : row[5]
-			type : row[6]
-			atk : row[7]
-			def : row[8]
-			level : row[9]
-			race : row[10]
-			attribute : row[11]
-			category : row[12]
-		'''
 		if row == None:
 			raise TypeError('Cannot create a YGOProCard from None')
+			
+		name = row[0]
+		text = row[1]
+		cid = row[2]
+		
+		availability = row[3]
+		alias = row[4]
+		setcode = row[5]
+		
+		attack = row[7]
+		defense = row[8]
+		
 		try:
-			catstr = enum.get_string('category', row[6])
-			attrstr = enum.get_string('attribute', row[11])
-			typestr = enum.get_string('type', row[10])
-		except dbenum.EnumError as enum_err:
-			raise dbenum.EnumError('While creating card {0} '+str(enum))
-		level_value = row[9]
-		lvl = None
-		lscl = None
-		rscl = None
-		if level_value < 14:
-			lvl = level_value
+			category = enum.get_string('category', row[6])
+			attribute = enum.get_string('attribute', row[11])
+			monster_type = enum.get_string('type', row[10])
+		except enum.EnumError as enum_err:
+			raise enum.EnumError('While creating card {0} '+str(enum))
+			
+		raw_level = row[9]
+		level = None
+		left_scale = None
+		right_scale = None
+		if raw_level < 14:
+			level = raw_level
 		else:
 			# extract pendulum scales from level column.
-			hxstr = hex(level_value)
-			lvl = int(hxstr[8], 16)
-			lscl = int(hxstr[2], 16)
-			rscl = int(hxstr[4], 16)
-		blist_info = {}
+			hxstr = hex(raw_level)
+			level = int(hxstr[8], 16)
+			left_scale = int(hxstr[2], 16)
+			right_scale = int(hxstr[4], 16)
+			
+		if 'Monster' not in category:
+			level = None
+			left_scale = None
+			right_scale = None
+			attack = None
+			defense = None
+			
+		half_built_card = YGOProCard(
+			name, text, str(cid), None,
+			availability, alias, setcode,
+			category, attribute, monster_type,
+			attack, defense, level, left_scale, right_scale)
+		
+		# for each banlist, record how many copies of this card are allowed.
+		# doing this backward to allow for expanding banlist data sources
+		allowed = {}
 		for banlist in banlist_data:
-			blist_info[banlist.name.upper()] = banlist[row[2]]
-		return YGOProCard(row[0], row[1], str(row[2]), blist_info, row[3], row[4], row[5], catstr, attrstr, typestr, row[7], row[8], lvl, lscl, rscl)
+			allowed[banlist.name.upper()] = banlist.allowed(half_built_card)
+			
+		half_built_card._banlist_status = allowed
+		
+		return half_built_card
 	
 
 	def __init__(self, name, text, cid, blist_info, ot, alias, setcode, category, attribute, race, attack, defense, level, lscale=None, rscale=None):

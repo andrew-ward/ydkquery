@@ -23,8 +23,9 @@ class Banlist(object):
 		return 'Banlist({0})'.format(self)
 	def __str__(self):
 		return self.name
-	def __getitem__(self, cid):
-		return self._cards.get(cid, 3)
+	
+	def allowed(self, card):
+		return self._cards.get(card.cid, 3)
 		
 	def forbidden_cards(self):
 		"""

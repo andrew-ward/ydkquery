@@ -4,7 +4,7 @@ class YugiohCard(object):
 	""" holds all the data of a single yugioh card.
 	
 	:ivar name: full name of the card
-	:vartype name: string
+	:vartype name: unicode
 	
 	:ivar text: text on the card
 	:vartype text: string
@@ -52,16 +52,15 @@ class YugiohCard(object):
 		
 		self.type = race if race != "N/A" else None
 		
-		self.level = level if level > 0 else None
+		self.level = level
 		
-		self.attack = attack if 'Monster' in self.category else None
+		self.attack = attack
 		
-		self.defense = defense if 'Monster' in self.category else None
+		self.defense = defense
 		
 		self.left_scale = lscale
 		
-		self.right_scale = rscale
-		
+		self.right_scale = rscale		
 		
 	def __hash__(self):
 		return hash(self.cid)
