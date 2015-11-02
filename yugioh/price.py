@@ -77,9 +77,7 @@ class CardVersion(object):
 :ivar price: The price of the card.
 :vartype price: PriceHistory
 """
-	def __init__(self, card_name, set_name, print_tag, rarity, price):
-		
-		self.name = card_name
+	def __init__(self, set_name, print_tag, rarity, price):
 		
 		self.set_name = set_name
 		

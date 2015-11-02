@@ -91,7 +91,7 @@ class YugiohCard(object):
 			output += ' / DEF {0}\n'.format(self.defense if self.defense >= 0 else '?')
 		else:		
 			output += self._type_line() + '\n'
-		output += '{0}\n'.format(self.text)
+		output += u'{0}\n'.format(self.text)
 		return output
 		
 	def _type_line(self):

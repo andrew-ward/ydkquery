@@ -20,9 +20,8 @@ else:
 class APIError(RuntimeError):
 	pass
 
-def _get_version_data(name, info):
+def _get_version_data(info):
 	return price.CardVersion(
-		name,
 		info['name'],
 		info['print_tag'],
 		info['rarity'],
@@ -63,20 +62,19 @@ def get_card_price_data(card):
 	cname = quote_plus(card.name)
 	url = 'http://yugiohprices.com/api/get_card_prices/{0}'.format(cname)
 	data = _api_request(url)
-	return [_get_version_data(card.name, version) for version in data]
+	return [_get_version_data(version) for version in data]
 	
 def get_name_price_data(card_name):
 	cname = quote_plus(card_name)
 	url = 'http://yugiohprices.com/api/get_card_prices/{0}'.format(cname)
 	data = _api_request(url)
-	return [_get_version_data(card_name, version) for version in data]
+	return [_get_version_data(version) for version in data]
 	
 def get_print_tag_price_data(print_tag):
 	cname = quote_plus(print_tag)
 	url = 'http://yugiohprices.com/api/price_for_print_tag/{0}'.format(cname)
 	data = _api_request(url)
-	name = data['name']
-	return [_get_version_data(name, data['price_data'])]
+	return [_get_version_data(data['price_data'])]
 	
 def get_price_data(arg):
 	"""Get price data about card from YugiohPrices.com api.
