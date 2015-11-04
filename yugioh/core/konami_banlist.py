@@ -9,6 +9,7 @@ with database.YGOProDatabase(banlists=konami_banlist.load_tcg_banlist()) as db:
 	
 	
 This puts ydktools one step closer to eliminating the dependency on ygopro.
+Does not work on python3, because lxml does not exist?
 """
 from  .banlist import Banlist, ParseError
 from lxml import html

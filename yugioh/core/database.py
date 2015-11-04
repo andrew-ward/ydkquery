@@ -214,8 +214,9 @@ class YGOProCard(card.YugiohCard):
 		if row == None:
 			raise TypeError('Cannot create a YGOProCard from None')
 			
-		name = row[0]
-		text = row[1]
+		
+		name = row[0] # unicode
+		text = row[1] # unicode
 		cid = row[2]
 		
 		availability = row[3]

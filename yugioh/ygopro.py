@@ -89,13 +89,7 @@ def load_card(name, by='guess', db_path=None):
 :rtype: core.card.YugiohCard
 :raises: core.database.CardNotFoundException"""
 	with core.database.database(db_path) as db:
-		if by == 'guess':
-			if name.isdigit():
-				return db.find(name, by='id')
-			else:
-				return db.find(name, by='name')
-		else:
-			return db.find(name, by=by)
+		return db.find(name, by=by)
 	
 
 

@@ -67,7 +67,7 @@ def get_card_price_data(card):
 :rtype: list of price.CardVersion
 :raises: yugiohprices.APIError
 """
-	cname = quote_plus(card.name)
+	cname = quote_plus(card.name.encode('utf8', 'replace'))
 	url = 'http://yugiohprices.com/api/get_card_prices/{0}'.format(cname)
 	data = _api_request(url)
 	return [_get_version_data(version) for version in data]

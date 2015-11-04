@@ -7,7 +7,7 @@ class YugiohCard(object):
 	:vartype name: unicode
 	
 	:ivar text: text on the card
-	:vartype text: string
+	:vartype text: unicode
 	
 	:ivar category: a text string that says what kind of card it is (i.e. Normal Spell, Counter Trap, Synchro Monster, etc)
 	:vartype category: string
@@ -37,7 +37,7 @@ class YugiohCard(object):
 	:vartype right_scale: int
 	"""
 	def __init__(self, name, text, cid, banlist_status, category, attribute, race, attack, defense, level, lscale=None, rscale=None):
-		self.name = name
+		self.name = name 
 		
 		self.text = text
 		
@@ -73,16 +73,16 @@ class YugiohCard(object):
 		return self.as_dict()[key]
 		
 	def __repr__(self):
-		return 'YugiohCard({0})'.format(self.name)
+		return 'YugiohCard({0})'.format(str(self))
 	def __str__(self):
-		return self.name
+		return self.name.encode('utf8', 'replace')
 		
 	def description(self):
 		"""Return a formatted string depiction of the card, matching the format of a physical card as much as possible.
 		
 		:returns: A string describing the card.
 		:rtype: string"""
-		output = '{0} ({1})\n'.format(self.name, self.cid)
+		output = '{0} ({1})\n'.format(self.name.encode('utf8', 'replace'), self.cid)
 		if self.is_monster():
 			output += '{0} {1}\n'.format(self.attribute, '*' * self.level)
 			output += self._type_line() + '\n'
@@ -90,7 +90,7 @@ class YugiohCard(object):
 			output += ' / DEF {0}\n'.format(self.defense if self.defense >= 0 else '?')
 		else:		
 			output += self._type_line() + '\n'
-		output += u'{0}\n'.format(self.text)
+		output += '{0}\n'.format(self.text.encode('utf8', 'replace'))
 		return output
 		
 	def _type_line(self):

@@ -40,6 +40,7 @@ def load_deck(flname, db_path=None):
 	
 	leading_number = re.compile('^\w*(1|2|3) +(.*)$')
 	trailing_number = re.compile('^(.*) +\w*(1|2|3)$')
+	exactly_one  = re.compile('^(.*)$')
 	extract_author = re.compile('^by +(.*)')
 	
 	for line in lines:
@@ -59,14 +60,18 @@ def load_deck(flname, db_path=None):
 		else:
 			lead = leading_number.match(line.strip())
 			trail = trailing_number.match(line.strip())
-			if not lead and not trail:
+			no_x = exactly_one.match(line.strip())
+			if not lead and not trail and not no_x:
 				continue
-			elif lead != None:
+			elif lead:
 				count = lead.group(1)
 				name = lead.group(2)
-			elif trail != None:
+			elif trail:
 				count = trail.group(2)
 				name = trail.group(1)
+			elif no_x:
+				count = 1
+				name = no_x.group(1)
 			card = db.find(name, by='name')
 			if card:
 				current.add_card(card, int(count))
