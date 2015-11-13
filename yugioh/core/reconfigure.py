@@ -1,5 +1,6 @@
 import os
 import json
+from . import compat
 
 class ConfigurationError(RuntimeError):
 	pass
@@ -24,3 +25,10 @@ def update_config(**kwargs):
 			json.dump(config, fl, indent=4)
 
 	
+def summary():
+	with open(config_flname) as fl:
+		config = json.load(fl)
+		output = []
+		for key, value in config.items():
+			output.append([key, value, os.path.exists(value)])
+		return output

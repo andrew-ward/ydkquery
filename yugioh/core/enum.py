@@ -5,9 +5,7 @@ Got a lot of help from https://www.ygopro.co/Forum/tabid/95/g/posts/t/120/Adding
 """
 
 # This whole page is a mess. I'll clean it up if it ends up biting me in the butt.
-
-MAGIC_NUMBERS = {
-	'attribute' : {
+attributes = {
 		'N/A'   : 0,
 		'EARTH' : 1,
 		'WATER' : 2,
@@ -16,8 +14,8 @@ MAGIC_NUMBERS = {
 		'LIGHT' : 16,
 		'DARK' :  32,
 		'DIVINE' : 64
-	},
-	'type' : {
+	}
+types = {
 		'N/A'   : 0,
 		'Warrior' :       1,
 		'Spellcaster' :   2,
@@ -43,14 +41,14 @@ MAGIC_NUMBERS = {
 		'Divine-Beast' :  2097152,
 		'Creator-God' :   4194304,
 		'Wyrm' :          8388608,
-	},
-	'banlist' : {
+	}
+availability = {
 		'OCG' : 1,
 		'TCG' : 2,
 		'Any' : 3,
 		'Anime' : 4,
-	},
-	'category' : {
+	}
+category = {
 		'Normal-Spell':                 2,
 		'Normal-Trap':                  4,
 		'Normal-Monster':               17,
@@ -81,11 +79,16 @@ MAGIC_NUMBERS = {
 		'Toon-Effect-Monster':          4194337,
 		'Xyz-Monster':                  8388609,
 		'Xyz-Effect-Monster':           8388641,
-		'Pendulum-Monster' :            16777233,
+		'Normal-Pendulum-Monster' :            16777233,
 		'Pendulum-Effect-Monster' :     16777249,
 		'Pendulum-Tuner-Effect-Monster':16781345,
 		'Xyz-Pendulum-Effect-Monster' : 25165857,
 	}
+MAGIC_NUMBERS = {
+	'attribute' : attributes,
+	'type' : types,
+	'banlist' : availability,
+	'category' : category
 }
 
 # this is not really useful anymore, but I'm not going to delete it.

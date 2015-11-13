@@ -7,7 +7,7 @@ for more implementation details.
 """
 
 from yugioh.consist import Cardset
-from yugioh import ygopro
+from yugioh import decks
 
 if __name__ == '__main__':
 	# load the deck you want to work with using ydkopen
@@ -15,7 +15,7 @@ if __name__ == '__main__':
 	# to a deck in your ygopro/deck/ folder.
 	# deck_path depends on you having ydklib.conf set up
 	# to point to the ygopro directory
-	mermail = ygopro.load_deck(ygopro.deck_path('AI_Mermail'))
+	mermail = decks.open_deck('AI_Mermail')
 
 	# create sets of cards. These are treated as variables, that calculate
 	# how many of any of these cards are in a hand.

@@ -1,5 +1,6 @@
 """Holds datatype for yugioh cards"""
 import collections
+from . import banlist
 class YugiohCard(object):
 	""" holds all the data of a single yugioh card.
 	
@@ -36,7 +37,9 @@ class YugiohCard(object):
 	:ivar right_scale: The right pendulum scale of the monster
 	:vartype right_scale: int
 	"""
-	def __init__(self, name, text, cid, banlist_status, category, attribute, race, attack, defense, level, lscale=None, rscale=None):
+	banlist_cache = banlist.load_banlists()
+	
+	def __init__(self, name, text, cid, category, attribute, race, attack, defense, level, lscale=None, rscale=None, banlist_data = None):
 		self.name = name 
 		
 		self.text = text
@@ -45,7 +48,6 @@ class YugiohCard(object):
 		
 		self.cid = cid		
 		
-		self._banlist_status = banlist_status
 				
 		# only exist for monsters
 		self.attribute = attribute if attribute != "N/A" else None
@@ -62,10 +64,26 @@ class YugiohCard(object):
 		
 		self.right_scale = rscale		
 		
+		self._banlist_status = {}
+		
+		
+		if banlist_data:
+			for name, count in banlist_data:
+				self._banlist_status[name] = count
+		else:
+			for BL in YugiohCard.banlist_cache:
+				self._banlist_status[BL.name] = BL.allowed(self.name, self.text)
+
+		
 	def __hash__(self):
 		return hash(self.cid)
 	def __eq__(self, other):
 		return isinstance(other, YugiohCard) and self.cid == other.cid
+		
+	def __lt__(self, other):
+		return self.cid < other.cid
+	def __gt__(self, other):
+		return self.cid > other.cid
 		
 	def __iter__(self):
 		return iter(self.as_dict().items())
@@ -196,16 +214,13 @@ class YugiohCard(object):
 		"""
 		:returns: True if card is a Ritual monster card
 		:rtype: boolean"""
-		return self.is_monster and 'Ritual' in self.category()
+		return self.is_monster and 'Ritual' in self.category
 		
-	def is_legal(self, banlist='TCG'):
-		"""
-		:param banlist: what banlist you are asking about.
-		:type banlist: string
-		:returns: True if card is legal on the given banlist
-		:rtype: boolean"""
-		return self.allowed() > 0
-		
+	def is_extra_deck(self):
+		return self.is_xyz() or self.is_fusion() or self.is_synchro()
+	def is_main_deck(self):
+		return not self.is_extra_deck()
+
 	def allowed(self, banlist='TCG'):
 		"""
 		:param banlist: what banlist you are asking about.
@@ -216,21 +231,3 @@ class YugiohCard(object):
 			if banlist.upper() in key:
 				return self._banlist_status[key]
 		raise KeyError('No banlist called {0}'.format(banlist))
-
-	def banlist_status(self, banlist='TCG'):
-		"""
-		:param banlist: what banlist you are asking about.
-		:type banlist: string
-		:returns: The status of this card on the banlist
-		:rtype: "unlimited" or "semi-limited" or "limited" or "forbidden" """
-		n = self.allowed(banlist)
-		if n == 0:
-			return 'forbidden'
-		elif n == 1:
-			return 'limited'
-		elif n == 2:
-			return 'semi-limited'
-		elif n == 3:
-			return 'unlimited'
-		else:
-			raise RuntimeError('wtf. {0} says you can run {1} copies in {2} format'.format(self.name(), n, banlist))

@@ -18,30 +18,28 @@ Example: ::
 
 
 """
-from .core import database, deck
+from .core.deck import YugiohDeck
 import re
 
-def load_deck(flname, db_path=None):
+def load(text, card_source):
 	"""Reads the file and returns a new deck representing the contents.
 
 	:param flname: the absolute path to the deck
 	:type flname: string
 	:returns: the deck
 	:rtype: core.deck.YugiohDeck"""
-	lines = None
-	with open(flname) as fl:
-		lines = fl.readlines()
-	if lines == None or len(lines) == 0:
-		return None
-	return _parse_deck(lines, db_path)
-	db = database.database(db_path)
-	blank_deck = deck.YugiohDeck(lines[0].strip(), '', [], [], [])
-	current = blank_deck.main
+	lines = text.splitlines()
 	
 	leading_number = re.compile('^\w*(1|2|3) +(.*)$')
 	trailing_number = re.compile('^(.*) +\w*(1|2|3)$')
-	exactly_one  = re.compile('^(.*)$')
 	extract_author = re.compile('^by +(.*)')
+	
+	main = []
+	side = []
+	extra = []
+	current = main
+	author = ''
+	title = ''
 	
 	for line in lines:
 		line = line.strip()
@@ -49,19 +47,18 @@ def load_deck(flname, db_path=None):
 			continue
 		elif extract_author.match(line.strip().lower()):
 			result = extract_author.match(line.strip().lower())
-			blank_deck.author = result.group(1)
+			author = result.group(1)
 		
 		elif line.strip().lower().startswith('main'):
-			current = blank_deck.main
+			current = main
 		elif line.strip().lower().startswith('extra'):
-			current = blank_deck.extra
+			current = extra
 		elif line.strip().lower().startswith('side'):
-			current = blank_deck.side
+			current = side
 		else:
 			lead = leading_number.match(line.strip())
 			trail = trailing_number.match(line.strip())
-			no_x = exactly_one.match(line.strip())
-			if not lead and not trail and not no_x:
+			if not lead and not trail:
 				continue
 			elif lead:
 				count = lead.group(1)
@@ -69,22 +66,38 @@ def load_deck(flname, db_path=None):
 			elif trail:
 				count = trail.group(2)
 				name = trail.group(1)
-			elif no_x:
-				count = 1
-				name = no_x.group(1)
-			card = db.find(name, by='name')
-			if card:
-				current.add_card(card, int(count))
-			else:
-				raise database.CardNotFoundError('Unknown card {0}'.format(name))
-	return blank_deck
+				
+			card = card_source.find(name)		
+			for i in count:
+				current.append(card)
+				
+	return YugiohDeck(title, author, main, side, extra)
+
+def dump(deck):
+	"""
+	:returns: the deck as an easy-to-read raw text format.
+	:rtype: string"""
+	output = []
+	output.append(self.name)
+	output.append(self.author)
+	output.append('Main Deck')
+	output.append('  Monsters ({})'.format(len(self.main.monsters())))
+	for monster in monsters:
+		output.append("    {0} x{1}".format(monster.name, self.main.count(monster)))
+
+	output.append('  Spells ({})'.format(len(self.main.spells())))
+	for spell in self.main.spells():
+		output.append("    {0} x{1}".format(spell.name, self.main.count(spell)))
+
+	output.append('  Traps ({})'.format(len(self.main.traps())))
+	for trap in self.main.traps():
+		output.append("    {0} x{1}".format(trap.name, self.main.count(trap)))
 	
-def save_deck(deck, fl):
-	"""Write the given deck to file as a text decklist.
-	
-:param deck: the deck
-:type deck: core.deck.YugiohDeck
-:param fl: the output file
-:type fl: file
-:returns: None"""
-	fl.write(deck.as_decklist())
+	output.append("Extra Deck ({0})".format(len(self.extra)))
+	for monster in self.extra:
+		output.append("    {0} x{1}".format(monster.name, self.extra.count(monster)))
+		
+	output.append("Side Deck ({0})".format(len(self.side)))
+	for card in self.side:
+		output.append("    {0} x{1}".format(card.name, self.side.count(card)))
+	return '\n'.join(output)

@@ -10,7 +10,7 @@ certain files on your computer.
 """
 import os
 import json
-from .configuration import ConfigurationError
+from .reconfigure import ConfigurationError
 	
 DATABASE_PATH = None
 BANLIST_PATH = None

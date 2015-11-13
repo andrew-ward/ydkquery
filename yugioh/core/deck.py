@@ -42,6 +42,7 @@ class YugiohSet(object):
 		:type count: int
 		:returns: None"""
 		assert(isinstance(count, int))
+		assert(isinstance(card, YugiohCard))
 		if card in self._contents:
 			self._contents[card] += count
 		else:
@@ -131,6 +132,27 @@ class YugiohSet(object):
 				result.append(card)
 		return result
 		
+	def monsters(self):
+		result = []
+		for card in self:
+			if card.is_monster():
+				result.append(card)
+		return result
+		
+	def spells(self):
+		result = []
+		for card in self:
+			if card.is_spell():
+				result.append(card)
+		return result
+		
+	def traps(self):
+		result = []
+		for card in self:
+			if card.is_trap():
+				result.append(card)
+		return result
+		
 class YugiohDeck(object):
 	"""A full yugioh deck, containing main, side, and extra decks
 	
@@ -149,11 +171,20 @@ class YugiohDeck(object):
 	:ivar extra: The extra deck
 	:vartype extra: YugiohSet"""
 	def __init__(self, name, author, main_deck=None, side_deck=None, extra_deck=None):
-		self.main = YugiohSet(main_deck)
+		if isinstance(main_deck, YugiohSet):
+			self.main = main_deck
+		else:
+			self.main = YugiohSet(main_deck)
+			
+		if isinstance(side_deck, YugiohSet):
+			self.side = side_deck
+		else:		
+			self.side = YugiohSet(side_deck)
 		
-		self.side = YugiohSet(side_deck)
-		
-		self.extra = YugiohSet(extra_deck)
+		if isinstance(extra_deck, YugiohSet):
+			self.extra = extra_deck
+		else:
+			self.extra = YugiohSet(extra_deck)
 
 		self.name = name
 		
@@ -173,26 +204,12 @@ class YugiohDeck(object):
 		"""Returns the size of the main deck by default"""
 		return len(self.main)
 
-	def as_ydk(self):
-		"""
-		:returns: the deck as .ydk formatted text.
-		:rtype: string"""
-		output = '#created by {0}\n'.format(self.author)
-		output += '#main\n'
-		for card in self.main.enumerate():
-			output += '{0}\n'.format(card.cid)
-		output += '#extra\n'
-		for card in self.extra.enumerate():
-			output += '{0}\n'.format(card.cid)
-		output += '!side\n'
-		for card in self.side.enumerate():
-			output += '{0}\n'.format(card.cid)
-		return output
-		
 	def as_markdown(self):
-		"""
+		"""TO BE REMOVED
+				
 		:returns: the deck as reddit-formatted markdown text.
-		:rtype: string"""
+		:rtype: string
+		"""
 		monsters = self.main.find(YugiohCard.is_monster)
 		output = '## {0}\n*by {1}*\n'.format(self.name, self.author)
 		output += "# Monster:{0}\n".format(self.main.count_all(monsters))
@@ -217,34 +234,4 @@ class YugiohDeck(object):
 		for card in self.side:
 			output += "- **{0}x {1}**\n".format(self.side.count(card), card.name)
 		output += "---\n"
-		return output
-		
-	def as_decklist(self):
-		"""
-		:returns: the deck as an easy-to-read raw text format.
-		:rtype: string"""
-		output = '{0}\nby {1}\n'.format(self.name, self.author)
-		monsters = self.main.find(YugiohCard.is_monster)
-		output += 'Main Deck\n'	
-		output += "  Monster({0})\n".format(self.main.count_all(monsters))
-		for monster in monsters:
-			output += "    {0} x{1}\n".format(monster.name, self.main.count(monster))
-
-		spells = self.main.find(YugiohCard.is_spell)			
-		output += "  Spells({0})\n".format(self.main.count_all(spells))
-		for spell in spells:
-			output += "    {0} x{1}\n".format(spell.name, self.main.count(spell))
-
-		traps = self.main.find(YugiohCard.is_trap)			
-		output += "  Traps({0})\n".format(self.main.count_all(traps))
-		for trap in traps:
-			output += "    {0} x{1}\n".format(trap.name, self.main.count(trap))
-		
-		output += "Extra Deck({0})\n".format(len(self.extra))
-		for monster in self.extra:
-			output += "    {0} x{1}\n".format(monster.name, self.extra.count(monster))
-			
-		output += "Side Deck({0})\n".format(len(self.side))
-		for card in self.side:
-			output += "    {0} x{1}\n".format(card.name, self.side.count(card))
 		return output

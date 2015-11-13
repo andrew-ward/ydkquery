@@ -1,60 +1,257 @@
-#!/usr/bin/env python
-"""
-A command line application for doing things with yugioh cards.
-"""
+'''
+ydktools config -a /path/to/ygopro
+ydktools info --[price|info|name|sets|rarity] (deckpath|-s keywords)
+ydktools price [-v] (deckpath|-s keywords)
+ydktools convert (deckpath|-s keywords) [-o destpath]
 
-import yugioh
-import sys, locale, re
-
-import ydktools_config
-import ydktools_convert
-import ydktools_prices
-import ydktools_search
-
-if __name__ == '__main__':
+'''
+import os, sys
+def parse_main():
 	import argparse
-	parser = argparse.ArgumentParser(description="Use the yugioh python library to do things.")
-
-	sub = parser.add_subparsers(dest='command')
-
-	config = sub.add_parser('config', description="Configure the ydktools package with paths to an install of ygopro.", help='Configure the ydktools package.')	
-	config.add_argument('-v', '--validate', help='Check if config file is currently valid.', action='store_true')
-	config.add_argument('-a', '--all', help='Configure all paths automatically by giving a standard ygopro install directory.', nargs='?')
-	config.add_argument('-c', '--cards', help='Set path to cards.cdb database.')
-	config.add_argument('-b', '--banlist',  help='Set path to lflist.conf banlist file.')
-	config.add_argument('-d', '--decks', help='Set path to ygopro deck directory..')
+	parser = argparse.ArgumentParser(description='ydktools')
+	subparsers = parser.add_subparsers(dest='command')
 	
-
-	convert = sub.add_parser('convert', description='A command line program for converting between deck formats.', help='Convert between deck formats')
-	convert.add_argument('input_path', help="a path to a properly formatted .ydk or .txt deck. If you do not give an extension, it will be assumed to be .ydk. If the deck does not exist, it will search the ygopro/deck directory as specified in yugioh.core.config")
-	convert.add_argument('output_path', help="The location to save the newly created deck file. You may also simply give a file format (ydk, md, txt), where instead the output will be printed to stdout. If it is merely a deck name, with no extension or path, it will be assumed .ydk, and saved in the ygopro deck directory.")
-	
-	price = sub.add_parser('price', description="Reads a .ydk deck listing and calculates the expected price of the main, extra, and side deck. Price data is from YugiohPrices.com web api.", help='Check the prices of decks.')
-	price.add_argument('deckname', help='Path to a .ydk deck, or just the name of the deck in the ygopro deck folder.')
-	price.add_argument('-v', '--verbose', help='print individual card prices', action='store_true')
-	group = price.add_mutually_exclusive_group()
-	group.add_argument('--low', help='[default] find the lowest price for the deck', action='store_true')
-	group.add_argument('--high', help='find the highest price for the deck', action='store_true')
-	group.add_argument('--average', help='find the price of a deck if you blindly picked cards from the set of all printings.')
-	price.add_argument('-p', '--prefer', help='find the price while preferring copies of card of a particular rarity. Also suports Holo as a rarity, which prefers anything that isn\'t Common or Rare.')
-
-
-	search = sub.add_parser('search', description='Search for yugioh cards, and look at various print information about them.', help='Get information on single cards.')
-	search.add_argument('cardname', help='The full name of the card. Spelling and punctuation is important. Alternately can be the Card Number or Card ID (printed on the lower left hand corner of most cards).')
-	search.add_argument('-v', '--verbose', help='Show more information than normal', action='store_true')
-	search.add_argument('-q', '--quickprice', help='Get a quick price check summary of all the releases of the card.', action='store_true')
-	search.add_argument('-p', '--prints', help='Get all the print runs of the card.', action='store_true')
-	search.add_argument('-i', '--info', help='Get the text and stats of the card.', action='store_true')
-	search.add_argument('-f', '--find', help='Find a card using sql expressions.', action='store_true')
-
+	parse_config(subparsers)
+	parse_info (subparsers)
+	parse_price(subparsers)
+	parse_convert(subparsers)
 
 	args = parser.parse_args()
+	return args
 	
+def parse_info(parent):
+	parser = parent.add_parser('info')
+	parser.add_argument('select', nargs='*')
+	parser.add_argument('-p', '--price', action='store_true')
+	parser.add_argument('-d', '--description', action='store_true')
+	parser.add_argument('-s', '--sets', action='store_true')
+	parser.add_argument('-r', '--rarity', action='store_true')
+	parser.add_argument('-c', '--count', action='store_true')
+	
+def parse_price(parent):
+	parser = parent.add_parser('price')
+	parser.add_argument('path', nargs='*')
+	parser.add_argument('-v', '--verbose', action='store_true')
+	parser.add_argument('-s', '--search', action='store_true')
+	parser.add_argument('-p', '--prefer', action='store_true')
+	parser.add_argument('-m', '--max-rarity', action='store_true')
+	
+def parse_convert(parent):
+	parser = parent.add_parser('convert')
+	parser.add_argument('-s', '--search', action='store_true')
+	parser.add_argument('source', nargs='*')
+	parser.add_argument('-o', '--output')
+	
+	
+def parse_config(parent):
+	parser = parent.add_parser('config')
+	parser.add_argument('-a', '--all')
+	parser.add_argument('-v', '--validate', action='store_true')
+	parser.add_argument('-c', '--cards')
+	parser.add_argument('-d', '--deck')
+	parser.add_argument('-b', '--banlist')
+	
+	
+def query_search(kws):
+	from yugioh import search, query
+	cards = search.all_cards()
+	func = query.create_filter(kws)
+	return func(cards)
+	
+def find_cards(kws, search_mode):
+	from yugioh import ygojson, decks, search, query
+	from yugioh.core import deck
+	if len(kws) == 0:
+		text = sys.stdin.read()
+		deck = ygojson.load(text) # either json or txt
+		return deck
+	elif len(kws) == 1 and search_mode == False:
+		return decks.open_deck(kws[0]) # get fmt from kws[0] extension
+	else:
+		cards = query_search(kws)
+		return deck.YugiohDeck('.tmp', 'unknown',
+			main_deck=[card for card in cards if card.is_main_deck()],
+			extra_deck=[card for card in cards if card.is_extra_deck()]
+		)
+
+def info_price(card):
+	from yugioh import prices
+	from yugioh.core import compat
+	versions = prices.card_versions(card.name.encode('utf8', 'replace'))
+	price = versions.price()
+	return compat.format_money(price)
+	
+def info_description(card):
+	return card.description()
+	
+def info_rarity(card, sep=', ', prefix=''):
+	from yugioh import prices
+	versions = prices.card_versions(card.name.encode('utf8', 'replace'))
+	rarities = [version.rarity for version in versions]
+	return sep.join(prefix+str(x) for x in rarities)
+	
+def info_sets(card, sep='\n', prefix='  '):
+	from yugioh import prices
+	from yugioh.core import compat
+	versions = prices.card_versions(card.name.encode('utf8', 'replace'))
+	output = []
+	for version in versions:
+		p = compat.format_money(version.low) if version.has_price else '??'
+		output.append('{} for ~{} from {}'.format(version.rarity, p, version.set_name))
+	return sep.join(prefix+str(x) for x in output)
+		
+def info_main(args):
+	deck = find_cards(args.select, True) # None implies undecided
+	if args.count:
+		a = len(deck.all())
+		sys.stdout.write('{}\n'.format(a))
+	else:
+		for card in deck.all():
+			if args.description:
+				sys.stdout.write('\n'+info_description(card))
+			else:
+				sys.stdout.write(card.name.encode('utf8', 'replace'))
+			if args.price:
+				sys.stdout.write(' {}'.format(info_price(card)))
+			if args.rarity:
+				sys.stdout.write(' (' + info_rarity(card) + ')')
+			
+			if args.sets:
+				sys.stdout.write('\n'+info_sets(card))
+			sys.stdout.write('\n')	
+	
+def smart_price(card, prefer, max_rarity):
+	from yugioh import prices
+	versions = prices.card_versions(card)
+	if max_rarity:
+		selected = versions.select_max()
+	elif not prefer:
+		selected = versions
+	elif prefer == 'holo':
+		selected = versions.holos()
+	else:
+		selected = versions.select_at_least(prefer)
+	if len(selected) == 0:
+		selected = versions
+	if not selected.has_price:
+		return None
+	else:
+		return selected.price()
+	
+def price_main(args):
+	from yugioh.core import compat
+	deck = find_cards(args.path, args.search)
+	output = 'Main Deck {main_total}\n'
+	main_price = 0.0
+	if args.verbose:
+		output += '  Monsters\n'
+	for card in deck.main.monsters():
+		price = smart_price(card, args.prefer, args.max_rarity)
+		if args.verbose:
+			output += '    {}{} - {}\n'.format(
+				card.name.encode('utf8', 'replace'),
+				' x'+str(deck.main.count(card)) if not args.search else '',
+				compat.format_money(price) if price else '??'	
+			)
+		if price != None:
+			main_price += (price * deck.main.count(card))
+		
+	if args.verbose:
+		output += '  Spells\n'
+	for card in deck.main.spells():
+		price = smart_price(card, args.prefer, args.max_rarity)
+		if args.verbose:
+			output += '    {}{} - {}\n'.format(
+				card.name.encode('utf8', 'replace'),
+				' x'+str(deck.main.count(card)) if not args.search else '',
+				compat.format_money(price) if price else '??'	
+			)
+		if price != None:
+			main_price += (price * deck.main.count(card))
+			
+	if args.verbose:		
+		output += '  Traps\n'
+	for card in deck.main.traps():
+		price = smart_price(card, args.prefer, args.max_rarity)
+		if args.verbose:
+			output += '    {}{} - {}\n'.format(
+				card.name.encode('utf8', 'replace'),
+				' x'+str(deck.main.count(card)) if not args.search else '',
+				compat.format_money(price) if price else '??'	
+			)
+		if price != None:
+			main_price += (price * deck.main.count(card))
+			
+	output += 'Extra Deck {extra_total}\n'
+	extra_price = 0.0
+	for card in deck.extra:
+		price = smart_price(card, args.prefer, args.max_rarity)
+		if args.verbose:
+			output += '  {}{} - {}\n'.format(
+				card.name.encode('utf8', 'replace'),
+				' x'+str(deck.extra.count(card)) if not args.search else '',
+				compat.format_money(price) if price else '??'	
+			)
+		if price != None:
+			extra_price += (price * deck.extra.count(card))
+			
+	output += 'Side Deck {side_total}\n'
+	side_price = 0.0
+	for card in deck.side:
+		price = smart_price(card, args.prefer, args.max_rarity)
+		if args.verbose:
+			output += '  {}{} - {}\n'.format(
+				card.name.encode('utf8', 'replace'),
+				' x'+str(deck.side.count(card)) if not args.search else '',
+				compat.format_money(price) if price else '??'	
+			)
+		if price != None:
+			side_price += (price * deck.side.count(card))
+	output += 'Total {final_total}\n'
+	final_price = main_price + side_price + extra_price
+	output = output.format(
+		main_total = compat.format_money(main_price),
+		extra_total = compat.format_money(extra_price),
+		side_total = compat.format_money(side_price),
+		final_total = compat.format_money(final_price)
+	)
+	sys.stdout.write(output)
+	
+def convert_main(args):
+	from yugioh import decks
+	deck = find_cards(args.source, args.search)
+	if args.output:
+		decks.save(deck, args.output) # get fmt from args.output extension
+	else:
+		decks.save(deck, 'txt') #no dest path, so write to stdout
+	
+
+def config_main(args):
+	from yugioh.core import reconfigure
+	if args.all:
+		reconfigure.update_config(
+			DECK_DIRECTORY=os.path.join(args.all, 'deck/'),
+			DATABASE_PATH=os.path.join(args.all, 'cards.cdb'),
+			BANLIST_PATH=os.path.join(args.all, 'lflist.conf')
+		)
+	if args.validate:
+		data = reconfigure.summary()
+		for var, value, valid in data:
+			sys.stdout.write('[{}] {} = {}\n'.format('ok' if valid else 'XX', var, value))
+	if args.cards:
+		reconfigure.update_config(DATABASE_PATH=args.cards)
+	if args.deck:
+		reconfigure.update_config(DECK_DIRECTORY=args.deck)
+	if args.banlist:
+		reconfigure.update_config(BANLIST_PATH=args.banlist)
+
+if __name__ == '__main__':
+	args = parse_main()
 	if args.command == 'config':
-		ydktools_config.main(args)
-	elif args.command == 'search':
-		ydktools_search.main(args)
+		config_main(args)
+	elif args.command == 'info':
+		info_main(args)
 	elif args.command == 'price':
-		ydktools_prices.main(args)
+		price_main(args)
 	elif args.command == 'convert':
-		ydktools_convert.main(args)
+		convert_main(args)

@@ -1,19 +1,12 @@
-# useful utility libraries that are specific enough to not be in core
-from . import findpath
+# Handle conversion, opening, and writing of decks
+from . import decks
 
+# Handles price data and print data of cards.
+from . import releases
 
-# the most useful modules.
-from . import decklist
-from . import ygopro
-from . import yugiohprices
+# Handles finding cards
+from . import prices
 
-# the consistency checker tool
-from . import consist
+# Looks for cards with easy query syntax
+from . import query
 
-# the module that contains all the low-level datatypes
-# also contains config data
-from . import core
-
-# non-public resources for other code in the package.
-# Look at them, but don't touch.
-#import converters, price
