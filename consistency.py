@@ -6,8 +6,8 @@ for more implementation details.
 
 """
 
-from yugioh.consist import Cardset
-from yugioh import decks
+from ygo.consist import Cardset
+from ygo import decks
 
 if __name__ == '__main__':
 	# load the deck you want to work with using ydkopen

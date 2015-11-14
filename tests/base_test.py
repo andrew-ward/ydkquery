@@ -3,8 +3,8 @@ import os, sys
 
 class Test(unittest.TestCase):
 	def validate_card(self, card, **kwargs):
-		from yugioh.core import enum
-		from yugioh.core.card import YugiohCard
+		from ygo.core import enum
+		from ygo.core.card import YugiohCard
 		self.assertIsInstance(card, YugiohCard)
 		self.assertIsNotNone(card)
 		self.assertIsNotNone(card.name)

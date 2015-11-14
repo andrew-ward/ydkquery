@@ -5,7 +5,7 @@ import sys
 sys.path.insert(0, '..')
 class TestQuery(Test):
 	def test_banlist(self):
-		from yugioh.core import banlist
+		from ygo.core import banlist
 		bls = banlist.load_banlists()
 		self.assertIsNotNone(bls)
 		self.assertGreater(len(bls), 0)
@@ -19,7 +19,7 @@ class TestQuery(Test):
 				self.assertGreater(len(s), 10)
 				
 	def test_database(self):
-		from yugioh.core import database
+		from ygo.core import database
 		
 		with database.YGOProDatabase() as db:
 		
@@ -43,7 +43,7 @@ class TestQuery(Test):
 			
 			
 	def test_query(self):
-		from yugioh import decklist, ydk, ygojson, search
+		from ygo import decklist, ydk, ygojson, search
 		with search.get_source() as src:
 			with open('tests/AI_BattlinBoxer.ydk') as fl:
 				text = fl.read()

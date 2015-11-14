@@ -21,6 +21,6 @@ setup(
 	
 	license='MIT',
 	
-	packages=['yugioh'],
-	scripts=['convert', 'pricecheck'],
+	packages=['ygo'],
+	scripts=['ydktools.py'],
 )

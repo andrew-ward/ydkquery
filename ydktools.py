@@ -53,14 +53,14 @@ def parse_config(parent):
 	
 	
 def query_search(kws):
-	from yugioh import search, query
+	from ygo import search, query
 	cards = search.all_cards()
 	func = query.create_filter(kws)
 	return func(cards)
 	
 def find_cards(kws, search_mode):
-	from yugioh import ygojson, decks, search, query
-	from yugioh.core import deck
+	from ygo import ygojson, decks, search, query
+	from ygo.core import deck
 	if len(kws) == 0:
 		text = sys.stdin.read()
 		deck = ygojson.load(text) # either json or txt
@@ -75,8 +75,8 @@ def find_cards(kws, search_mode):
 		)
 
 def info_price(card):
-	from yugioh import prices
-	from yugioh.core import compat
+	from ygo import prices
+	from ygo.core import compat
 	versions = prices.card_versions(card.name.encode('utf8', 'replace'))
 	price = versions.price()
 	return compat.format_money(price)
@@ -85,14 +85,14 @@ def info_description(card):
 	return card.description()
 	
 def info_rarity(card, sep=', ', prefix=''):
-	from yugioh import prices
+	from ygo import prices
 	versions = prices.card_versions(card.name.encode('utf8', 'replace'))
 	rarities = [version.rarity for version in versions]
 	return sep.join(prefix+str(x) for x in rarities)
 	
 def info_sets(card, sep='\n', prefix='  '):
-	from yugioh import prices
-	from yugioh.core import compat
+	from ygo import prices
+	from ygo.core import compat
 	versions = prices.card_versions(card.name.encode('utf8', 'replace'))
 	output = []
 	for version in versions:
@@ -121,7 +121,7 @@ def info_main(args):
 			sys.stdout.write('\n')	
 	
 def smart_price(card, prefer, max_rarity):
-	from yugioh import prices
+	from ygo import prices
 	versions = prices.card_versions(card)
 	if max_rarity:
 		selected = versions.select_max()
@@ -139,7 +139,7 @@ def smart_price(card, prefer, max_rarity):
 		return selected.price()
 	
 def price_main(args):
-	from yugioh.core import compat
+	from ygo.core import compat
 	deck = find_cards(args.path, args.search)
 	output = 'Main Deck {main_total}\n'
 	main_price = 0.0
@@ -218,7 +218,7 @@ def price_main(args):
 	sys.stdout.write(output)
 	
 def convert_main(args):
-	from yugioh import decks
+	from ygo import decks
 	deck = find_cards(args.source, args.search)
 	if args.output:
 		decks.save(deck, args.output) # get fmt from args.output extension
@@ -227,7 +227,7 @@ def convert_main(args):
 	
 
 def config_main(args):
-	from yugioh.core import reconfigure
+	from ygo.core import reconfigure
 	if args.all:
 		reconfigure.update_config(
 			DECK_DIRECTORY=os.path.join(args.all, 'deck/'),
