@@ -33,7 +33,7 @@ def parse_price(parent):
 	parser.add_argument('path', nargs='*')
 	parser.add_argument('-v', '--verbose', action='store_true')
 	parser.add_argument('-s', '--search', action='store_true')
-	parser.add_argument('-p', '--prefer', action='store_true')
+	parser.add_argument('-p', '--prefer')
 	parser.add_argument('-m', '--max-rarity', action='store_true')
 	
 def parse_convert(parent):
@@ -87,7 +87,7 @@ def info_description(card):
 def info_rarity(card, sep=', ', prefix=''):
 	from ygo import prices
 	versions = prices.card_versions(card.name.encode('utf8', 'replace'))
-	rarities = [version.rarity for version in versions]
+	rarities = set([version.rarity for version in versions])
 	return sep.join(prefix+str(x) for x in rarities)
 	
 def info_sets(card, sep='\n', prefix='  '):

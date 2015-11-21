@@ -77,9 +77,9 @@ class ReleaseSet(object):
 	def __len__(self):
 		return len(self._versions)
 	def holos(self):
-		return ReleaseSet(x for x in self._versions if x.is_holo())
+		return ReleaseSet(self.card, (x for x in self._versions if x.is_holo()))
 	def select(self, f):
-		return ReleaseSet(x for x in self._versions if f(x))
+		return ReleaseSet(self.card, (x for x in self._versions if f(x)))
 	def select_at_least(self, rarity):
 		return self.select(lambda x: _rarity_at_least(rarity, x))
 	def select_max(self, rarity):
