@@ -70,9 +70,9 @@ class YGOProDatabase(search_interface.CardRetriever):
 	def find_name(self, name):
 		if self.connection == None:
 			self.open()			
-		
+		name = unicode(name, 'utf-8')
 		cursor = self.connection.cursor()
-		query = '''
+		query = u'''
 			SELECT texts.name, texts.desc, datas.*
 			FROM texts, datas
 			WHERE texts.id = datas.id AND texts.name LIKE ?'''

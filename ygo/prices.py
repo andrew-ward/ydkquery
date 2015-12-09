@@ -21,15 +21,18 @@ class CardRelease(object):
 	def __hash__(self):
 		return hash(self.print_tag)
 	def __eq__(self, other):
-		return self.print_tag == other.print_tag
+		return isinstance(other, CardRelease) and self.print_tag == other.print_tag
 	def is_holo(self):
 		return self.rarity not in ('Common', 'Rare', 'Short Print')
 	def hype(self):
 		return self.delta[1]
 		
-		
-def _pick_rarity(r):
-	order = [
+def rarity_score(release):
+	if isinstance(release, CardRelease):
+		rarity = release.rarity
+	else:
+		rarity = release
+	rarity_order = [
 		'Common',
 		'Short Print',
 		'Rare',
@@ -46,26 +49,16 @@ def _pick_rarity(r):
 		'Ultimate Rare',
 		'Ghost Rare'
 	]
-	for i, rarity in enumerate(order):
-		if r in rarity:
-			return i
-	return order.index('Parallel Rare')
+	score = 1
+	for sample in rarity_order:
+		if rarity.replace(' ','').lower() in sample.replace(' ','').lower():
+			return 10*score # big numbers are cool
+		score += 1
+	return 15
 	
 def _rarity_at_least(x, y):
 	'''Return if the rarity of y is better than the rarity of x'''
-	xval, yval = None, None
-	if x in order:
-		xval = _pick_rarity(x)
-	if y in order:
-		yval = _pick_rarity(y)
-	if xval and yval:
-		return xval <= yval
-	elif xval:
-		return xval <= _pick_rarity('Super Rare')
-	elif yval:
-		return _pick_rarity('Super Rare') <= yval
-	else:
-		return True
+	return rarity_score(x) >= rarity_score(y)
 			
 class ReleaseSet(object):
 	def __init__(self, card, versions):
@@ -81,12 +74,15 @@ class ReleaseSet(object):
 	def select(self, f):
 		return ReleaseSet(self.card, (x for x in self._versions if f(x)))
 	def select_at_least(self, rarity):
-		return self.select(lambda x: _rarity_at_least(rarity, x))
-	def select_max(self, rarity):
+		baseline = rarity_score(rarity)
+		def better_than_baseline(version):
+			return rarity_score(version) >= baseline
+		return self.select(better_than_baseline)
+	def select_max_rarity(self, rarity):
 		if len(self) > 0:
 			def sortkey(version):
 				return _pick_rarity(version.rarity)
-			versions = sorted(list(self._versions, key=sortkey))
+			versions = sorted(list(self._versions), key=sortkey)
 			return ReleaseSet(self.card, [versions[0]])
 		else:
 			return ReleaseSet(self.card, [])
@@ -103,6 +99,9 @@ class ReleaseSet(object):
 			return list(sorted(self._versions, key=lambda x: x.hype()))
 		else:
 			return list(sorted(self._versions, key=f))
+	def cheapest_release(self):
+		if self.has_price:
+			return min((x.low, x) for x in self if x.has_price)[1]
 	def price(self):
 		if self.has_price:
 			return min(x.low for x in self if x.has_price)

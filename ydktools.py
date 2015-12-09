@@ -23,10 +23,13 @@ def parse_info(parent):
 	parser = parent.add_parser('info')
 	parser.add_argument('select', nargs='*')
 	parser.add_argument('-p', '--price', action='store_true')
-	parser.add_argument('-d', '--description', action='store_true')
+	parser.add_argument('-i', '--info', action='store_true')
 	parser.add_argument('-s', '--sets', action='store_true')
 	parser.add_argument('-r', '--rarity', action='store_true')
 	parser.add_argument('-c', '--count', action='store_true')
+	parser.add_argument('-a', '--ascending', action='store_true')
+	parser.add_argument('-d', '--descending', action='store_true')
+	parser.add_argument('-j', '--json', action = 'store_true', help='Instead of print output to stdout, write a deck list in json (.jydk)')
 	
 def parse_price(parent):
 	parser = parent.add_parser('price')
@@ -81,6 +84,12 @@ def info_price(card):
 	price = versions.price()
 	return compat.format_money(price)
 	
+def info_get_price(card):
+	from ygo import prices
+	versions = prices.card_versions(card.name.encode('utf8', 'replace'))
+	return versions.price()
+	
+	
 def info_description(card):
 	return card.description()
 	
@@ -101,13 +110,24 @@ def info_sets(card, sep='\n', prefix='  '):
 	return sep.join(prefix+str(x) for x in output)
 		
 def info_main(args):
-	deck = find_cards(args.select, True) # None implies undecided
-	if args.count:
+	from ygo.core import compat
+	deck = find_cards(args.select, True) # None implies undecided (~AW what does this mean? I don't remember...)
+	if args.json:
+		raise NotImplementedError('JSON output not yet implemented.')
+	elif args.count:
 		a = len(deck.all())
 		sys.stdout.write('{}\n'.format(a))
+	elif args.descending or args.ascending:
+		cards = deck.all()
+		prices = [(info_get_price(card), card) for card in cards]
+		prices.sort()
+		if args.descending:
+			prices.reverse()
+		for price, card in prices:
+			sys.stdout.write('{} {}\n'.format(card.name.encode('utf8', 'replace'), compat.format_money(price)))
 	else:
 		for card in deck.all():
-			if args.description:
+			if args.info:
 				sys.stdout.write('\n'+info_description(card))
 			else:
 				sys.stdout.write(card.name.encode('utf8', 'replace'))
@@ -118,16 +138,17 @@ def info_main(args):
 			
 			if args.sets:
 				sys.stdout.write('\n'+info_sets(card))
-			sys.stdout.write('\n')	
+			sys.stdout.write('\n')
 	
 def smart_price(card, prefer, max_rarity):
+	# preference currently does not work
 	from ygo import prices
 	versions = prices.card_versions(card)
 	if max_rarity:
-		selected = versions.select_max()
+		selected = versions.select_max_rarity()
 	elif not prefer:
 		selected = versions
-	elif prefer == 'holo':
+	elif prefer.lower() == 'holo':
 		selected = versions.holos()
 	else:
 		selected = versions.select_at_least(prefer)
