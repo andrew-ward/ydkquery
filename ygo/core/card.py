@@ -40,9 +40,11 @@ class YugiohCard(object):
 	banlist_cache = banlist.load_banlists()
 	
 	def __init__(self, name, text, cid, category, attribute, race, attack, defense, level, lscale=None, rscale=None, banlist_data = None):
-		self.name = name 
+		self.name = name.encode('utf8', 'replace')
+		self.uname = name
 		
-		self.text = text
+		self.text = text.encode('utf8', 'replace')
+		self.utext = text
 		
 		self.category = category
 		
@@ -93,14 +95,14 @@ class YugiohCard(object):
 	def __repr__(self):
 		return 'YugiohCard({0})'.format(str(self))
 	def __str__(self):
-		return self.name.encode('utf8', 'replace')
+		return self.name
 		
 	def description(self):
 		"""Return a formatted string depiction of the card, matching the format of a physical card as much as possible.
 		
 		:returns: A string describing the card.
 		:rtype: string"""
-		output = '{0} ({1})\n'.format(self.name.encode('utf8', 'replace'), self.cid)
+		output = '{0} ({1})\n'.format(self.name, self.cid)
 		if self.is_monster():
 			output += '{0} {1}\n'.format(self.attribute, '*' * self.level)
 			output += self._type_line() + '\n'
@@ -108,7 +110,7 @@ class YugiohCard(object):
 			output += ' / DEF {0}\n'.format(self.defense if self.defense >= 0 else '?')
 		else:		
 			output += self._type_line() + '\n'
-		output += '{0}\n'.format(self.text.encode('utf8', 'replace'))
+		output += '{0}\n'.format(self.text)
 		return output
 		
 	def _type_line(self):
