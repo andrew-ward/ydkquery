@@ -6,7 +6,7 @@ from .card import YugiohCard
 
 class YugiohSet(object):
 	"""A set of yugioh cards that can be query'd"""
-	def __init__(self, cards):
+	def __init__(self, cards=None):
 		self._contents = {}
 		if cards:
 			self.add_cards(cards)
