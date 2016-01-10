@@ -58,6 +58,7 @@ INPUT_FORMATS = {
 }
 
 def load(text, fmt=None):
+	"Convert a string from a decklist format into a YugiohDeck object"
 	if fmt in INPUT_FORMATS:
 		return INPUT_FORMATS[fmt](text)
 	else:
@@ -86,6 +87,7 @@ OUTPUT_FORMATS = {
 }
 
 def dump(deck, path):
+	"Convert a YugiohDeck to a decklist format string. path can be a filepath with extension, or a format string (txt/json/ydk)"
 	if path in OUTPUT_FORMATS:
 		fmt = path
 	else:
