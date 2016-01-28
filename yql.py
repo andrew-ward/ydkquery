@@ -259,10 +259,3 @@ def select(querytext, cards=None):
 
 def match(querytext, card):
 	return create_query(querytext)(card)
-
-if __name__ == '__main__':
-	kush = ygo.search.find('Fabled Kushano')
-	rag = ygo.search.find('Fabled Ragin')
-	text = 'level 3 attack > 1000 defense < 1000 (tuner OR synchro)'
-	print match(text, kush)
-	print match(text, rag)
