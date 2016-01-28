@@ -58,3 +58,5 @@ target/
 
 ignore/
 *.txt
+parsetab.py
+parser.out

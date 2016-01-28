@@ -114,6 +114,7 @@ class YugiohCard(object):
 		return output
 		
 	def _type_line(self):
+		# helper function used in YugiohCard.description()
 		if self.is_monster():
 			types = [self.type]
 			parts = self.category.split('-')[:-1]
@@ -150,78 +151,77 @@ class YugiohCard(object):
 		:type key: string
 		:returns: information about the card."""
 		return self.as_dict()[key]
-		
+
 	def is_monster(self):
-		"""
-		:returns: True if card is a monster card
-		:rtype: boolean"""
-		return 'Monster' in self.category
-		
+		return (self.category & 1) > 0
+
 	def is_spell(self):
-		"""
-		:returns: True if card is a spell card
-		:rtype: boolean"""
-		return 'Spell' in self.category
-		
+		return (self.category & 2) > 0
+
 	def is_trap(self):
-		"""
-		:returns: True if card is a trap card
-		:rtype: boolean"""
-		# damn son, where'd you find this?
-		return 'Trap' in self.category
-		
-	def is_pendulum(self):
-		"""
-		:returns: True if card is a pendulum card
-		:rtype: boolean"""
-		return 'Pendulum' in self.category
-		
-	def is_synchro(self):
-		"""
-		:returns: True if card is a synchro card
-		:rtype: boolean"""
-		return 'Synchro' in self.category
-		
-	def is_xyz(self):
-		"""
-		:returns: True if card is an xyz card
-		:rtype: boolean"""
-		return 'Xyz' in self.category
-		
-	def is_fusion(self):
-		"""
-		:returns: True if card is an xyz card
-		:rtype: boolean"""
-		return 'Fusion' in self.category
-		
-	def is_tuner(self):
-		"""
-		:returns: True if card is a tuner card
-		:rtype: boolean"""
-		return 'Tuner' in self.category
-		
-	def is_effect_monster(self):
-		"""
-		:returns: True if card is an effect monster card
-		:rtype: boolean"""
-		return 'Effect' in self.category
-		
+		return (self.category & 4) > 0
+
+	#def is_tuner(self):
+	#	return (self.category & 8) > 0
+
 	def is_normal_monster(self):
-		"""
-		:returns: True if card is a monster card. This is not the same as a monster without an effect.
-		:rtype: boolean """
-		return self.category in ['Normal-Monster', 'Token']
+		return (self.category & 16) > 0
+
+	def is_effect_monster(self):
+		return (self.category & 32) > 0
+
+	def is_fusion(self):
+		return (self.category & 64) > 0
+
+	def is_ritual(self):
+		return (self.category & 128) > 0
+
+	def is_spirit(self):
+		return (self.category & 512) > 0
+
+	def is_union(self):
+		return (self.category & 1024) > 0
+
+	def is_gemini(self):
+		return (self.category & 2048) > 0
+
+	def is_tuner(self):
+		return (self.category & 4096) > 0
+
+	def is_synchro(self):
+		return (self.category & 8192) > 0
+
+	def is_quickplay(self):
+		return (self.category & 65536) > 0
+
+	def is_continuous(self):
+		return (self.category & 131072) > 0
+
+	def is_equip(self):
+		return (self.category & 262144) > 0
+
+	def is_field(self):
+		return (self.category & 524288) > 0
+
+	def is_counter_trap(self):
+		return (self.category & 1048576) > 0
+
+	def is_flip_effect(self):
+		return (self.category & 2097152) > 0
+
+	def is_toon(self):
+		return (self.category & 4194304) > 0
+
+	def is_xyz(self):
+		return (self.category & 8388608) > 0
+
+	def is_pendulum(self):
+		return (self.category & 16777216) > 0
 		
-	def is_ritual_monster(self):
-		"""
-		:returns: True if card is a Ritual monster card
-		:rtype: boolean"""
-		return self.is_monster and 'Ritual' in self.category
-		
-	def is_extra_deck(self):
+	def in_extra_deck(self):
 		return self.is_xyz() or self.is_fusion() or self.is_synchro()
-	def is_main_deck(self):
-		return not self.is_extra_deck()
+	def in_main_deck(self):
+		return not self.in_extra_deck()
 
 	def allowed(self, banlist='TCG'):
 		"""

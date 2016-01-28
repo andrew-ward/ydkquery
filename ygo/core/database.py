@@ -34,8 +34,6 @@ class YGOProDatabase(search_interface.CardRetriever):
 			raise InvalidQueryError('"{0}" is not a valid card key'.format(repr(card_key)))
 		if flag:
 			return self.find_id(card_key)
-		#elif re.match('^[0-9A-Z]+-[A-Z]+[0-9]*$', card_key):
-		#	return self._find_print_tag(card_key)
 		else:
 			return self.find_name(card_key)
 			
@@ -65,7 +63,7 @@ class YGOProDatabase(search_interface.CardRetriever):
 		return False
 			
 	def __make_card(self, row):
-		return YGOProCard.from_row(row)
+		return YGOProCard(row)
 			
 	def find_name(self, name):
 		if self.connection == None:
@@ -111,6 +109,7 @@ class YGOProDatabase(search_interface.CardRetriever):
 		return [self.__make_card(row) for row in cursor]
 		
 	def find_all(self, anime=False):
+		# get all cards from database
 		if self.connection == None:
 			self.open()			
 		
@@ -124,6 +123,33 @@ class YGOProDatabase(search_interface.CardRetriever):
 		cursor.execute(query)
 		return deck.YugiohSet(self.__make_card(row) for row in cursor)
 
+	def get_row(self, card_key):
+		if isinstance(card_key, card.YugiohCard):
+			card_key = card_key.cid
+		flag = False
+		try:
+			flag = card_key.isdigit()
+		except AttributeError:
+			raise InvalidQueryError('"{0}" is not a valid card key'.format(repr(card_key)))
+		if flag:
+			query = '''
+			SELECT texts.name, texts.desc, datas.*
+			FROM texts, datas
+			WHERE texts.id = datas.id AND texts.id = ?'''
+		else:
+			query = u'''
+			SELECT texts.name, texts.desc, datas.*
+			FROM texts, datas
+			WHERE texts.id = datas.id AND texts.name LIKE ?'''
+		if self.connection == None:
+			self.open()			
+		
+		cursor = self.connection.cursor()
+		cursor.execute(query, [card_key])
+		for row in cursor:
+			return row
+
+
 class YGOProCard(card.YugiohCard):
 	"""A YugiohCard with extra information from the ygopro database.
 	
@@ -134,8 +160,7 @@ class YGOProCard(card.YugiohCard):
 	:ivar setcode: This marks what archetype a card belongs to. If two cards have the same setcode, they belong to the same archetypes. The reverse is not neccesarily true.
 	:vartype setcode: int"""
 	
-	@staticmethod
-	def from_row(row):
+	def __init__(self, row):
 		"""Construct a new YugiohCard with a database row.
 
 		:param banlist_data: information about the current banlist
@@ -158,7 +183,7 @@ class YGOProCard(card.YugiohCard):
 		defense = row[8]
 		
 		try:
-			category = enum.get_string('category', row[6])
+			category = row[6]
 			attribute = enum.get_string('attribute', row[11])
 			monster_type = enum.get_string('type', row[10])
 		except enum.EnumError as enum_err:
@@ -177,26 +202,18 @@ class YGOProCard(card.YugiohCard):
 			left_scale = int(hxstr[2], 16)
 			right_scale = int(hxstr[4], 16)
 			
-		if 'Monster' not in category:
+		if category % 2 == 0:
 			level = None
 			left_scale = None
 			right_scale = None
 			attack = None
 			defense = None
 			
-		return YGOProCard(
+		card.YugiohCard.__init__(self,
 			name, text, str(cid),
-			availability, alias, setcode,
 			category, attribute, monster_type,
 			attack, defense, level, left_scale, right_scale)
 
-	
-
-	def __init__(self, name, text, cid, ot, alias, setcode, category, attribute, race, attack, defense, level, lscale=None, rscale=None):
-		card.YugiohCard.__init__(self, name, text, cid, category, attribute, race, attack, defense, level, lscale, rscale)
-		
+		self.availability = enum.get_string('banlist', availability)
 		self.alias = alias
-		
-		self.availability = enum.get_string('banlist', ot)
-		
 		self.setcode = setcode
