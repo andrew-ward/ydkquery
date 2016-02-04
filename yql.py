@@ -247,6 +247,7 @@ def p_error(t):
 
 parser = yacc.yacc(optimize=1)
 
+# Interface
 def create_query(querytext):
 	return parser.parse(querytext)
 
@@ -259,3 +260,7 @@ def select(querytext, cards=None):
 
 def match(querytext, card):
 	return create_query(querytext)(card)
+
+def select_cardset(querytext, cards=None):
+	cards = select(querytext, cards)
+	return ygo.consist.Cardset(cards)

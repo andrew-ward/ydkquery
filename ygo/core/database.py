@@ -213,7 +213,6 @@ class YGOProCard(card.YugiohCard):
 			name, text, str(cid),
 			category, attribute, monster_type,
 			attack, defense, level, left_scale, right_scale)
-
 		self.availability = enum.get_string('banlist', availability)
 		self.alias = alias
 		self.setcode = setcode

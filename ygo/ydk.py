@@ -55,10 +55,10 @@ def dump(deck):
 	for card in deck.main.enumerate():
 		output.append(card.cid)
 	output.append('#extra')
-	for card in self.extra.enumerate():
+	for card in deck.extra.enumerate():
 		output.append(card.cid)
 	output.append('!side')
-	for card in self.side.enumerate():
+	for card in deck.side.enumerate():
 		output.append(card.cid)
 	return '\n'.join(output)
 

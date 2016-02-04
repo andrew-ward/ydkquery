@@ -24,41 +24,34 @@ class CardRelease(object):
 		return isinstance(other, CardRelease) and self.print_tag == other.print_tag
 	def is_holo(self):
 		return self.rarity not in ('Common', 'Rare', 'Short Print')
-	def hype(self):
-		return self.delta[1]
 		
-def rarity_score(release):
-	if isinstance(release, CardRelease):
-		rarity = release.rarity
-	else:
-		rarity = release
-	rarity_order = [
-		'Common',
-		'Short Print',
-		'Rare',
-		'Super Rare',
-		'Super Short Print',
-		'Secret Rare',
-		'Parallel Rare',
-		'Holofoil Rare',
-		'Ultra Rare',
-		'Gold Ultra Rare',
-		'Ultra Secret Rare',
-		'Secret Ultra Rare',
-		'Prismatic Secret Rare',
-		'Ultimate Rare',
-		'Ghost Rare'
-	]
-	score = 1
-	for sample in rarity_order:
-		if rarity.replace(' ','').lower() in sample.replace(' ','').lower():
-			return 10*score # big numbers are cool
-		score += 1
-	return 15
-	
-def _rarity_at_least(x, y):
-	'''Return if the rarity of y is better than the rarity of x'''
-	return rarity_score(x) >= rarity_score(y)
+
+def rarity_score(rarity):
+	rl = rarity.lower()
+	if 'common' in rl:
+		if 'super' in rl and 'short' in rl and 'print' in rl:
+			return 2
+		elif 'short' in rl and 'print' in rl:
+			return 1
+		else:
+			return 0
+	elif 'rare' in rl:
+		if 'super' in rl:
+			return 4
+		elif 'ultra' in rl:
+			return 5
+		elif 'secret' in rl:
+			return 6
+		elif 'ultimate' in rl:
+			return 7
+		elif any(x in rl for x in ['parallel','starfoil','shatterfoil', 'gold', 'platinum']):
+			return 8
+		elif 'ghost' in rl:
+			return 9
+		else:
+			return 3
+			
+
 			
 class ReleaseSet(object):
 	def __init__(self, card, versions):
@@ -73,19 +66,6 @@ class ReleaseSet(object):
 		return ReleaseSet(self.card, (x for x in self._versions if x.is_holo()))
 	def select(self, f):
 		return ReleaseSet(self.card, (x for x in self._versions if f(x)))
-	def select_at_least(self, rarity):
-		baseline = rarity_score(rarity)
-		def better_than_baseline(version):
-			return rarity_score(version) >= baseline
-		return self.select(better_than_baseline)
-	def select_max_rarity(self, rarity):
-		if len(self) > 0:
-			def sortkey(version):
-				return _pick_rarity(version.rarity)
-			versions = sorted(list(self._versions), key=sortkey)
-			return ReleaseSet(self.card, [versions[0]])
-		else:
-			return ReleaseSet(self.card, [])
 	def price_sort(self, key='low'):
 		if key == 'low':
 			return list(sorted(self._versions, key=lambda x: x.low))
@@ -102,7 +82,7 @@ class ReleaseSet(object):
 	def cheapest_release(self):
 		if self.has_price:
 			return min((x.low, x) for x in self if x.has_price)[1]
-	def price(self):
+	def cheapest_price(self):
 		if self.has_price:
 			return min(x.low for x in self if x.has_price)
 		else:
@@ -111,10 +91,10 @@ class ReleaseSet(object):
 def card_versions(card_key, fail=False):
 	card = search.find(card_key)
 	if fail:
-		all_data = yugiohprices.get_card_prices(card.name.encode('utf8', 'replace'))
+		all_data = yugiohprices.get_card_prices(card.name)
 	else:
 		try:
-			all_data = yugiohprices.get_card_prices(card.name.encode('utf8', 'replace'))
+			all_data = yugiohprices.get_card_prices(card.name)
 		except yugiohprices.APIError:
 			return ReleaseSet(card, [])
 	results = []

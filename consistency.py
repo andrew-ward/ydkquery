@@ -19,6 +19,7 @@ if __name__ == '__main__':
 
 	# create sets of cards. These are treated as variables, that calculate
 	# how many of any of these cards are in a hand.
+	# you can also construct theses sets using yql with the select_cardset function.
 	discarder = Cardset(mermail.main.get_all([
 		'Mermail Abyssleed',
 		'Mermail Abyssmegalo',

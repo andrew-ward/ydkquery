@@ -23,12 +23,18 @@ class YugiohSet(object):
 		:rtype: iterator of card.YugiohCard"""
 		return iter(self._contents.keys())
 		
-	def all(self):
+	def unique(self):
 		"""
 		:returns: list of unique cards in the deck. If you have two copies of the same card, it will only appear once.
 		:rtype: list of card.YugiohCard"""
 		return list(self._contents.keys())
-		
+	
+	def all(self):
+		"""
+		:returns: all cards in the deck. If there are two or more copies of the card, it will return the card twice.
+		:rtype: list of card.YugiohCard"""
+		return self.enumerate()
+	
 	def __getitem__(self, key):
 		"""Return the number of copies of the given card in the deck"""
 		return self.count(key)
@@ -134,24 +140,34 @@ class YugiohSet(object):
 		
 	def monsters(self):
 		result = []
-		for card in self:
+		for card in self.all():
 			if card.is_monster():
 				result.append(card)
-		return result
+		return YugiohSet(result)
 		
-	def spells(self):
+	def spells(self, unique=True):
 		result = []
-		for card in self:
+		for card in self.all():
 			if card.is_spell():
 				result.append(card)
-		return result
+		return YugiohSet(result)
 		
-	def traps(self):
+	def traps(self, unique=True):
 		result = []
-		for card in self:
+		for card in self.all():
 			if card.is_trap():
 				result.append(card)
-		return result
+		return YugiohSet(result)
+
+	def as_deck(self):
+		main = []
+		extra = []
+		for card in self.all():
+			if card.in_main_deck():
+				main.append(card)
+			elif card.in_extra_deck():
+				extra.append(card)
+		return YugiohDeck('', '', main_deck=main, extra_deck=extra)
 		
 class YugiohDeck(object):
 	"""A full yugioh deck, containing main, side, and extra decks
@@ -203,35 +219,3 @@ class YugiohDeck(object):
 	def __len__(self):
 		"""Returns the size of the main deck by default"""
 		return len(self.main)
-
-	def as_markdown(self):
-		"""TO BE REMOVED
-				
-		:returns: the deck as reddit-formatted markdown text.
-		:rtype: string
-		"""
-		monsters = self.main.find(YugiohCard.is_monster)
-		output = '## {0}\n*by {1}*\n'.format(self.name, self.author)
-		output += "# Monster:{0}\n".format(self.main.count_all(monsters))
-		for monster in monsters:
-			output += "- **{0}x {1}**\n".format(self.main.count(monster), monster.name)
-
-		spells = self.main.find(YugiohCard.is_spell)			
-		output += "\n# Spells:{0}\n".format(self.main.count_all(spells))
-		for spell in spells:
-			output += "- **{0}x {1}**\n".format(self.main.count(spell), spell.name)
-
-		traps = self.main.find(YugiohCard.is_trap)			
-		output += "\n# Traps:{0}\n".format(self.main.count_all(traps))
-		for trap in traps:
-			output += "- **{0}x {1}**\n".format(self.main.count(trap), trap.name)
-		
-		output += "\n---\n# Extra Deck: {0}\n".format(len(self.extra))
-		for monster in self.extra:
-			output += "- **{0}x {1}**\n".format(self.extra.count(monster), monster.name)
-			
-		output += "\n---\n# Side Deck: {0}\n".format(len(self.side))
-		for card in self.side:
-			output += "- **{0}x {1}**\n".format(self.side.count(card), card.name)
-		output += "---\n"
-		return output
