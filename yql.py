@@ -26,7 +26,7 @@ def t_NUMBER(t):
 	return t
 
 def t_STRING(t):
-	'"[^"\n]*"|\'[^\'\n]*\''
+	'/[^/\n]*/|"[^"\n]*"|\'[^\'\n]*\''
 	t.value = t.value[1:-1]
 	return t
 

@@ -23,7 +23,7 @@ def construct_parser():
 	# Card Info
 	parser.add_argument('-p', '--price', action='store_true', help='Show price of each card')
 	parser.add_argument('-r', '--rarity', action='store_true', help='Show available rarities of all cards')
-
+	parser.add_argument('-P', '--prefer', help='choose what versions of cards to look at to determine price.')
 
 	# Output Format
 	parser.add_argument('-o', '--output', nargs='?', const='ydk', help='Write result to file. Determine format by filename. Alternately, just give the format to write result to stdout. If no args are given, will write ydk to stdout.')
@@ -39,7 +39,11 @@ def get_cards(args):
 		cards = ygo.decks.loads(text, fmt=args.stdin)
 	if args.query != None:
 		query = args.query
-		cards = ygo.core.deck.YugiohSet(yql.select(query, cards.all()))
+		if cards != None:
+			pool = cards.all()
+		else:
+			pool = None
+		cards = ygo.core.deck.YugiohSet(yql.select(query, pool))
 	return cards
 
 def get_info(cards, args):
@@ -97,7 +101,25 @@ def generate_listing(prefix, cardlist, args):
 			rarity = list(sorted(rarity, key=ygo.prices.rarity_score))
 			output += ' ({})'.format(', '.join(rarity))
 		elif args.price:
-			cost = info['price_info'].cheapest_price()
+			prices = info['price_info']
+			if args.prefer != None and prices.has_price:
+				if args.prefer.lower() == 'max':
+					cost = max(v.low for v in prices)
+				elif args.prefer.lower() == 'holo':
+					h = prices.holos()
+					if len(h) == 0:
+						cost = prices.cheapest_price()
+					else:
+						cost = h.cheapest_price()
+				else:
+					rscore = ygo.prices.rarity_score(args.prefer)
+					def cmpr(version):
+						r = ygo.prices.rarity_score(version.rarity)
+						return r >= rscore
+					prices = prices.select(cmpr)
+					cost = prices.cheapest_price()
+			else:
+				cost = prices.cheapest_price()
 			if cost != None:
 				cost = cost * info['count']
 				output += ' (${})'.format(cost)
@@ -124,6 +146,7 @@ def create_infodump(deck_info, args):
 		        '  Spells (${})\n' +
 		        '{}\n' +
 		        '  Traps (${})\n' +
+		        '{}\n' +
 		        'Side Deck (${})\n' +
 		        '{}\n' +
 		        'Extra Deck (${})\n' +
@@ -138,6 +161,7 @@ def create_infodump(deck_info, args):
 		        '  Spells\n' +
 		        '{}\n' +
 		        '  Traps\n' +
+		        '{}\n' +
 		        'Side Deck\n' +
 		        '{}\n' +
 		        'Extra Deck\n' +

@@ -50,6 +50,18 @@ def rarity_score(rarity):
 			return 9
 		else:
 			return 3
+	elif 'super' in rl:
+		return 4
+	elif 'ultra' in rl:
+		return 5
+	elif 'secret' in rl:
+		return 6
+	elif 'ultimate' in rl:
+		return 7
+	elif 'ghost' in rl:
+		return 9
+	else:
+		return 8
 			
 
 			
