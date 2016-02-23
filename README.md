@@ -14,3 +14,4 @@ Supports reading and writing from .ydk files, and lets you search cards using th
 
 `ygo.consist` is a module that will calculate the probability of drawing certain cards in your opening hand, like several hypergeometric calculators around the internet. Unlike any other I've seen, this probability calculator will allow complicated, arbitrarily complex expressions. Need to know your chance of opening Lonefire + Soulcharge? Easy. Need to know how big of an impact dropping E. Tele from your Ritual Beast deck has on being able to combo off first turn? No problem. It can even calculate complicated things, such as the likelihood that, if you drew one or more Trade-In, you also drew the same number of level 8 targets.
 
+NOTE: Currently depends on having an install of ygopro (devpro or percy) on the local computer - or at least the database. Configuration is done with config.py.
