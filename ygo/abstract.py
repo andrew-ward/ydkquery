@@ -17,7 +17,7 @@ else:
 def get_html(path):
 	fl = urlopen(path)
 	if sys.version_info.major == 3:
-		text = fl.readall().decode('utf-8')
+		text = fl.read().decode('utf-8')
 	else:
 		text = fl.read()
 	fl.close()

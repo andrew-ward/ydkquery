@@ -3,20 +3,30 @@ This is the front end for reading and writing ygopro .ydk deck lists,
 as well as searching the ygopro database for cards.
 """
 
-import os
-from .core.deck import YugiohDeck
-from . import search
+from .deck import YugiohDeck
 
-def load(text, card_source=None):
+def open_deck(path, card_source):
 	"""Opens and parses a .ydk file. 
 	
 :param path: absolute path to the deck
 :type path: string
-:param db_path: absolute path to the ygopro card database
-:type db_path: string
+:param card_source: some database that allows finding cards by name
+:type card_source: core.ygopro.YGOProDatabase
+:returns: the deck
+:rtype: decklist.deck.YugiohDeck"""
+	with open(path, 'r') as fl:
+		text = fl.read()
+		return load(text, card_source)
+
+def load(text, card_source):
+	"""Parses a .ydk file. 
+	
+:param text: the contents of the decklist file as text
+:type text: string
+:param card_source: some database that allows finding cards by name
+:type card_source: core.ygopro.YGOProDatabase
 :returns: the deck
 :rtype: core.deck.YugiohDeck"""
-	card_source = card_source or search.get_source()
 	main = []
 	side = []
 	extra = []
@@ -31,8 +41,9 @@ def load(text, card_source=None):
 	Also for some reason the side deck is !side instead of #side. iunno.
 	'''
 	for line in text.splitlines():
-		if line.startswith('#created by '):
-			author = (line.rstrip())[11:]
+		line = line.rstrip()
+		if line.startswith('#created by'):
+			author = line[11:].strip()
 		elif line.startswith('#main'):
 			current = main
 		elif line.startswith('#extra'):
@@ -41,7 +52,7 @@ def load(text, card_source=None):
 			current = side
 		else:
 			cid = line.rstrip()
-			card = card_source.find(cid)
+			card = card_source.find_id(cid)
 			current.append(card)
 	return YugiohDeck(title, author, main, side, extra)
 	

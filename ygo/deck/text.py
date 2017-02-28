@@ -1,5 +1,5 @@
 """
-This module supports reading and writing to text deck lists. The first line is the deck title. An author can by set by a line beginning with "by", and then the author's name. Card names are entered one per line, and either followed or preceded by the number of copies. Any line beginning with Main, Extra, or Side begins the appropriate section. Line comments can be added by starting a line with # or //
+This module supports reading and writing to text deck lists. The first line is the deck title. An author can be set by a line beginning with "by", and then the author's name. Card names are entered one per line, and either followed or preceded by the number of copies. Any line beginning with Main, Extra, or Side begins the appropriate section. Line comments can be added by starting a line with # or //
 
 Example: ::
 
@@ -18,16 +18,31 @@ Example: ::
 
 
 """
-from .core.deck import YugiohDeck
+from .deck import YugiohDeck
 import re
 
-def load(text, card_source):
-	"""Reads the file and returns a new deck representing the contents.
+def open_deck(path, card_source):
+	"""Opens and parses a .txt file. 
+	
+:param path: path to the deck
+:type path: string
+:param card_source: some database that allows finding cards by name
+:type card_source: core.ygopro.YGOProDatabase
+:returns: the deck
+:rtype: decklist.deck.YugiohDeck"""
+	with open(path, 'r') as fl:
+		text = fl.read()
+		return load(text, card_source)
 
-	:param flname: the absolute path to the deck
-	:type flname: string
-	:returns: the deck
-	:rtype: core.deck.YugiohDeck"""
+def load(text, card_source):
+	"""Parses a .txt decklist file. 
+	
+:param text: the contents of the decklist file as text
+:type text: string
+:param card_source: some database that allows finding cards by name
+:type card_source: core.ygopro.YGOProDatabase
+:returns: the deck
+:rtype: core.deck.YugiohDeck"""
 	lines = text.splitlines()
 	
 	leading_number = re.compile('^\w*(1|2|3) +(.*)$')
@@ -67,7 +82,7 @@ def load(text, card_source):
 				count = trail.group(2)
 				name = trail.group(1)
 				
-			card = card_source.find(name)		
+			card = card_source.find_name(name)		
 			for i in count:
 				current.append(card)
 				
@@ -79,7 +94,7 @@ def dump(deck):
 	:rtype: string"""
 	output = []
 	output.append(deck.name)
-	output.append(deck.author)
+	output.append("by {0}".format(deck.author))
 	output.append('Main Deck')
 	output.append('  Monsters ({})'.format(len(deck.main.monsters())))
 	for monster in deck.main.monsters():
