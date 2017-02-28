@@ -1,185 +1,167 @@
-import os, sys
+#!/usr/bin/python
 import argparse
+import os, sys
 import ygo
-import yql
-"""
-Functionality
-	each card
-		show price for each card
-		show rarities available for each card
-	all cards
-		sort cards by key
-		count cards retrieved	
-"""
+from ygopro_config import YGOPRO_PATH
 
 def construct_parser():
 	parser = argparse.ArgumentParser(description='ydktools')
 
-	# Card Query
-	parser.add_argument('-q', '--query', help='Use a yql query to specify cards')
-	parser.add_argument('-i', '--stdin', '--input', nargs='?', const='ydk', help='read in a decklist from stdin using the given format. Default is ydk.')
-	parser.add_argument('-d', '--deck', help='Open a decklist and use those cards')
+	# Get Cards
+	parser.add_argument('filename', nargs="?", help='Open a decklist and use those cards')
+	parser.add_argument('-n', '--name', help="Find a single card by name")
+	parser.add_argument('-q', '--query', action="append", help='Use a yql query to specify cards')
+	parser.add_argument('-i', '--input', '--stdin', nargs='?', const="ydk", help='read in a decklist from stdin using the given format. Default is ydk.')
 
 	# Card Info
 	parser.add_argument('-p', '--price', action='store_true', help='Show price of each card')
+
 	parser.add_argument('-r', '--rarity', action='store_true', help='Show available rarities of all cards')
+	"""
 	parser.add_argument('-P', '--prefer', help='choose what versions of cards to look at to determine price.')
+	"""
 
 	# Output Format
-	parser.add_argument('-o', '--output', nargs='?', const='ydk', help='Write result to file. Determine format by filename. Alternately, just give the format to write result to stdout. If no args are given, will write ydk to stdout.')
+	parser.add_argument('-o', '--output', nargs='?', const='ydk', help='Write result to file. Determine format by filename. Alternately, just give the format to write result to stdout.')
 	return parser
 
-def get_cards(args):
-	cards = None
-	if args.deck != None:
-		path = args.deck
-		cards = ygo.decks.open_deck(path)
-	elif args.stdin != None:
-		txt = sys.stdin.read()
-		cards = ygo.decks.loads(text, fmt=args.stdin)
-	if args.query != None:
-		query = args.query
-		if cards != None:
-			pool = cards.all()
-		else:
-			pool = None
-		cards = ygo.core.deck.YugiohSet(yql.select(query, pool))
-	return cards
 
-def get_info(cards, args):
-	deck = {
-		'main_monsters' : [],
-		'main_spells' : [],
-		'main_traps' : [],
-		'side' : [],
-		'extra' : []
-	}
-	if isinstance(cards, ygo.core.deck.YugiohDeck):
-		for (name, yset) in [
-		                     ('main_monsters', cards.main.monsters()),
-		                     ('main_spells', cards.main.spells()),
-		                     ('main_traps', cards.main.traps()),
-		                     ('side', cards.side),
-		                     ('extra', cards.extra)
-		]:
-			for card in yset:
-				info = {}
-				info['card'] = card
-				info['count'] = yset.count(card)
-				if args.price or args.rarity:
-					info['price_info'] = ygo.prices.card_versions(card)
-				deck[name].append(info)
-	elif isinstance(cards, ygo.core.deck.YugiohSet):
-		for card in cards:
-			info = {}
-			info['card'] = card
-			info['count'] = cards.count(card)
-			if args.price or args.rarity:
-				info['price_info'] = ygo.prices.card_versions(card)
-			if card.in_main_deck() and card.is_monster():
-				deck['main_monsters'].append(info)
-			if card.in_main_deck() and card.is_spell():
-				deck['main_spells'].append(info)
-			if card.in_main_deck() and card.is_trap():
-				deck['main_traps'].append(info)
-			elif card.in_extra_deck():
-				deck['extra'].append(info)
-	return deck
-		
-def generate_listing(prefix, cardlist, args):
-	output = ''
-	total_cost = 0
-	for info in cardlist:
-		output += '{}{} x{}'.format(prefix, info['card'].name, info['count'])
-		if args.rarity and args.price:
-			for version in sorted(info['price_info'], key=lambda c: c.low):
-				output += '\n{}    {} from {} for ${}'.format(prefix, version.rarity, version.set_name, version.low * info['count'] if version.low else '??')
-		elif args.rarity:
-			rarity = set()
-			for version in info['price_info']:
-				rarity.add(version.rarity)
-			rarity = list(sorted(rarity, key=ygo.prices.rarity_score))
-			output += ' ({})'.format(', '.join(rarity))
-		elif args.price:
-			prices = info['price_info']
-			if args.prefer != None and prices.has_price:
-				if args.prefer.lower() == 'max':
-					cost = max(v.low for v in prices)
-				elif args.prefer.lower() == 'holo':
-					h = prices.holos()
-					if len(h) == 0:
-						cost = prices.cheapest_price()
-					else:
-						cost = h.cheapest_price()
-				else:
-					rscore = ygo.prices.rarity_score(args.prefer)
-					def cmpr(version):
-						r = ygo.prices.rarity_score(version.rarity)
-						return r >= rscore
-					prices = prices.select(cmpr)
-					cost = prices.cheapest_price()
-			else:
-				cost = prices.cheapest_price()
-			if cost != None:
-				cost = cost * info['count']
-				output += ' (${})'.format(cost)
-				total_cost += cost
-			else:
-				output += ' ($??)'
-		output += '\n'
-	return output, total_cost
-			
+def get_input(session, args):
+	if args.input is not None:
+		fmt = args.input
+		text = sys.stdin.read()
+		return session.load(text, fmt)
 
-def create_infodump(deck_info, args):
-	mmlisting, mmcost = generate_listing(' '*6, deck_info['main_monsters'], args)
-	mslisting, mscost = generate_listing(' '*6, deck_info['main_spells'], args)
-	mtlisting, mtcost = generate_listing(' '*6, deck_info['main_traps'], args)
-	slisting, scost = generate_listing(' '*6, deck_info['side'], args)
-	elisting, ecost = generate_listing(' '*6, deck_info['extra'], args)
-	
-	if args.price and not args.rarity:
-		mdcost = mmcost + mscost + mtcost
-		total = mdcost + scost + ecost
-		return ('Main Deck (${})\n' + 
-		        '  Monsters (${})\n' +
-		        '{}\n' +
-		        '  Spells (${})\n' +
-		        '{}\n' +
-		        '  Traps (${})\n' +
-		        '{}\n' +
-		        'Side Deck (${})\n' +
-		        '{}\n' +
-		        'Extra Deck (${})\n' +
-		        '{}\n' +
-		        'TOTAL: ${}\n').format(mdcost, mmcost,
-		mmlisting, mscost, mslisting, mtcost, mtlisting,
-		scost, slisting, ecost, elisting, total)
+	elif args.filename is not None and args.filename == '-':
+		text = sys.stdin.read()
+		# no fmt means session will auto-detect format based on contents
+		return session.load(text)
+
+	elif args.filename is not None:
+		flname = args.filename
+		# no fmt means session will auto-detect format based on file extension
+		return session.open_deck(flname)
+
+	elif args.query is not None:
+		cards = session.yql(args.query)
+		return ygo.deck.YugiohDeck(main=ygo.deck.YugiohSet(cards))
+
+	elif args.name is not None:
+		cards = session.find_name(args.name)
+		return ygo.deck.YugiohDeck(main=ygo.deck.YugiohSet([cards]))
+
 	else:
-		return ('Main Deck\n' + 
-		        '  Monsters\n' +
-		        '{}\n' +
-		        '  Spells\n' +
-		        '{}\n' +
-		        '  Traps\n' +
-		        '{}\n' +
-		        'Side Deck\n' +
-		        '{}\n' +
-		        'Extra Deck\n' +
-		        '{}\n').format(mmlisting, mslisting, mtlisting, slisting, elisting)
+		return ygo.deck.YugiohDeck()
 
+def write_output(session, args, deck):
+	if args.output is None:
+		return
+	elif args.output in ['ydk', 'txt', 'text', 'json']:
+		out = session.dump(deck, args.output)
+		sys.stdout.write(out)
+	elif args.output == '-':
+		sys.stdout.write(session.dump(deck, 'ydk'))
+	else:
+		session.save_deck(deck, args.output)
+	
+def display_info(session, args, deck):
+	if args.price is None and args.rarity is None:
+		return
+
+	if len(deck.side) == 0 and len(deck.extra) == 0:
+		rarity = args.rarity is not None
+		display_set_price(session, deck.main, _cheapest, rarity)
+	else:
+		rarity = args.rarity is not None
+		display_deck_price(session, deck, _cheapest, rarity)
+
+def _default_sort_key(card):
+	return (card.category_code, card.level, card.attack, card.id)
+
+def _cheapest(cards):
+	least = None
+	for card in cards:
+		if least == None or (card.price.average is not None and card.price.average < least):
+			least = card.price.average
+	return least
+
+def display_card_price(session, lines, indent, card, get_price, rarity):
+	price_data = session.price_data(card)
+	price = get_price(price_data)
+	price_str = ygo.abstract.format_money(price)
+	if rarity:
+		lines.append('{} {}'.format(indent*' ', card.name))
+		for print_run in price_data:
+			tag = print_run.print_tag
+			rarity = print_run.rarity
+			print_price = print_run.price.average
+			if print_price is not None:
+				print_price_str = ygo.abstract.format_money(print_price)
+				lines.append('{} [{}] {} - {}'.format((indent+4)*' ', print_price_str, tag, rarity))
+			else:
+				lines.append('{}         {} - {}'.format((indent+4)*' ', tag, rarity))
+	else:
+		lines.append('{}[{}] {}'.format(indent*' ', price_str, card.name))
+	return price
+
+def display_set_price(session, cardset, get_price, rarity):
+	total = 0
+	lines = ['All Cards ({price})']
+	for card in sorted(cardset, key=_default_sort_key):
+		total += display_card_price(session, lines, 4, card, get_price, rarity)
+	output = os.linesep.join(lines)
+	output = output.format(price=ygo.abstract.format_money(total))
+	sys.stdout.write(output+'\n')
+
+def display_deck_price(session, deck, get_price, rarity):
+	rarity = False
+	info = {
+		'main' : 0,
+		'monster': 0,
+		'spell': 0,
+		'trap': 0,
+		'side': 0,
+		'extra': 0,
+		'total': 0
+	}
+
+	lines = ['Main Deck ({main})']
+	lines.append('    Monsters ({monster})')
+	for monster in deck.main.monsters():
+		info['monster'] += display_card_price(session, lines, 8, monster, get_price, rarity)
+
+	lines.append('    Spells ({spell})')
+	for spell in deck.main.spells():
+		info['spell'] += display_card_price(session, lines, 8, spell, get_price, rarity)
+	
+	lines.append('    Traps ({trap})')
+	for trap in deck.main.traps():
+		info['trap'] += display_card_price(session, lines, 8, trap, get_price, rarity)
+
+	lines.append('Extra ({extra})')
+	for monster in deck.extra:
+		info['extra'] += display_card_price(session, lines, 4, monster, get_price, rarity)
+
+	lines.append('Side ({side})')
+	for card in deck.side:
+		info['side'] += display_card_price(session, lines, 4, card, get_price, rarity)
+	lines.append('Total ({total})')
+
+	info['main'] = info['monster'] + info['spell'] + info['trap']
+	info['total'] = info['main'] + info['side'] + info['extra']
+	info = dict((key, ygo.abstract.format_money(value)) for (key, value) in info.items())
+	output = os.linesep.join(lines)
+	output = output.format(**info)
+	sys.stdout.write(output+'\n')
 
 if __name__ == '__main__':
+	session = ygo.Session(YGOPRO_PATH)
 	parser = construct_parser()
 	args = parser.parse_args()
-	cards = get_cards(args)
-	if cards == None:
-		sys.stdout.write('No cards found.\n')
-	elif args.output:
-		outpath = args.output
-		if isinstance(cards, ygo.core.deck.YugiohSet):
-			cards = cards.as_deck()
-		ygo.decks.save_deck(cards, outpath)
-	else:
-		info = get_info(cards, args)	
-		sys.stdout.write(create_infodump(info, args))
 
+	deck = get_input(session, args)
+
+	display_info(session, args, deck)
+	
+	write_output(session, args, deck)
+	

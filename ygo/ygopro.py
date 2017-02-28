@@ -47,8 +47,7 @@ class YGOProDatabase(object):
 		cursor.execute(query)
 		output = []
 		for row in cursor:
-			output.append(self.__make_card(row))
-		return output
+			yield self.__make_card(row)
 		
 
 	def find_id(self, cid):

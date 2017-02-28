@@ -49,6 +49,13 @@ class PrintedCard(card.YugiohCard):
 	def __gt__(self, other):
 		return self.print_tag > other.print_tag
 
+def get_cheapest_price(printed_cards):
+	least = None
+	for card in printed_cards:
+		if least == None or (card.price.average is not None and card.price.average < least):
+			least = card.price.average
+	return least
+
 def rarity_score(rarity):
 	rl = rarity.lower()
 	if 'common' in rl:

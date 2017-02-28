@@ -54,7 +54,7 @@ def load(text, card_source):
 			cid = line.rstrip()
 			card = card_source.find_id(cid)
 			current.append(card)
-	return YugiohDeck(title, author, main, side, extra)
+	return YugiohDeck(main, side, extra, title, author)
 	
 def dump(deck):
 	"""
@@ -63,13 +63,13 @@ def dump(deck):
 	output = []
 	output.append('#created by {0}'.format(deck.author))
 	output.append('#main')
-	for card in deck.main.enumerate():
-		output.append(card.cid)
+	for card in deck.main.values():
+		output.append(card.id)
 	output.append('#extra')
-	for card in deck.extra.enumerate():
-		output.append(card.cid)
+	for card in deck.extra.values():
+		output.append(card.id)
 	output.append('!side')
-	for card in deck.side.enumerate():
-		output.append(card.cid)
+	for card in deck.side.values():
+		output.append(card.id)
 	return '\n'.join(output)
 

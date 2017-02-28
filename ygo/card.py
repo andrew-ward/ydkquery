@@ -32,6 +32,9 @@ class YugiohCard(object):
 			"scale": other['scale']
 		}
 
+	def __iter__(self):
+		raise TypeError("'{}' object is not iterable".format(self.__class__.__name__))
+
 	def __getitem__(self, key):
 		if key == 'name':
 			return self.properties['uname']
@@ -139,6 +142,9 @@ class YugiohCard(object):
 		return self.is_xyz() or self.is_fusion() or self.is_synchro()
 	def in_main_deck(self):
 		return not self.in_extra_deck()
+
+	def sort_key(self):
+		return (self['category_code'], self['level'], self['attack'], self['defense'], self['id'])
 
 def CATEGORY(number):
 	output = []

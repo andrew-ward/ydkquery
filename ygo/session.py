@@ -67,7 +67,7 @@ class Session(object):
 		mod = decklist if fmt==None else _get_module(fmt)
 		path = self.search_path(flname)
 		if path != None:
-			return mod.open_deck(flname, source)
+			return mod.open_deck(path, source)
 
 	def load(self, text, fmt=None):
 		source = self.get_database()
@@ -75,12 +75,17 @@ class Session(object):
 		return mod.load(text, source)
 
 	def dump(self, deck, fmt='text'):
+		if not isinstance(deck, decklist.YugiohDeck):
+			raise TypeError("Cannot dump an '{}' object to a decklist".format(deck.__class__.__name__))
 		source = self.get_database()
 		mod = _get_module(fmt)
 		return mod.dump(deck)
 
-	def save_deck(self, deck, path):
-		mod = decklist.detect_filename_format(path)
+	def save_deck(self, deck, path, fmt=None):
+		if fmt == None:
+			mod = decklist.detect_filename_format(path)
+		else:
+			mod = _get_module(fmt)
 		text = mod.dump(deck)
 		with open(path, 'w') as fl:
 			fl.write(text)
@@ -102,5 +107,9 @@ class Session(object):
 	def price_data(self, card):
 		cards = yugiohprices.get_price_data(card)
 		return decklist.YugiohSet(cards)
+
+	def get_price(self, card):
+		cards = yugiohprices.get_price_data(card)
+		return yugiohprices.get_cheapest_price(cards)
 		
 		

@@ -24,6 +24,15 @@ class YugiohSet(object):
 				text += ' x' + str(count)
 			cards.append(text)
 		return '{' + ', '.join(cards) + '}'
+
+	def __repr__(self):
+		cards = []
+		for card, count in self._contents.items():
+			text = str(card)
+			if count > 1:
+				text += ' x' + str(count)
+			cards.append(text)
+		return 'YugiohSet({' + ', '.join(cards) + '})'		
 		
 	def __iter__(self):
 		"""
@@ -125,7 +134,10 @@ class YugiohDeck(dict):
 	
 	:ivar extra: The extra deck
 	:vartype extra: YugiohSet"""
-	def __init__(self, name, author, main, side, extra):
+	def __init__(self, main=None, side=None, extra=None, name="", author=""):
+		main = main or YugiohSet()
+		side = side or YugiohSet()
+		extra = extra or YugiohSet()
 		dict.__init__(self, {
 			'name': name,
 			'author': author,

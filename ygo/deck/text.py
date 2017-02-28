@@ -86,7 +86,7 @@ def load(text, card_source):
 			for i in count:
 				current.append(card)
 				
-	return YugiohDeck(title, author, main, side, extra)
+	return YugiohDeck(main, side, extra, title, author)
 
 def dump(deck):
 	"""

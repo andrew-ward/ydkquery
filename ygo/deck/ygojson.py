@@ -63,7 +63,7 @@ def _load_deck(tree, card_source):
 	extra = _load_set(tree['extra'], card_source)
 	name = tree['name']
 	author = tree['author']
-	return YugiohDeck(name, author, main, side, extra)
+	return YugiohDeck(main, side, extra, name, author)
 	
 
 
