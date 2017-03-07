@@ -2,6 +2,10 @@ import itertools
 from . import deck
 from . import yql
 
+"""
+Still under development. If you want to dig into the source, be my guest.
+"""
+
 VERBOSE = 0
 
 def choose(n, k):

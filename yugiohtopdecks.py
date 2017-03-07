@@ -1,3 +1,8 @@
+"""
+Download and print a deck from yugiohtopdecks
+
+Does not currently work after they changed their ydk format
+"""
 import sys
 sys.dont_write_bytecode = True
 import ygo
@@ -9,16 +14,11 @@ def download(url):
 		url = 'http://yugiohtopdecks.com/ygopro_deck/{}'.format(url)
 	with ygo.Session(YGOPRO_PATH) as session:
 		text = ygo.abstract.get_html(url)
-		try:
-			deck = session.load(text, "ydk")
-			return session.dump(deck, 'txt')+'\n'
-		except ygo.ygopro.CardNotFoundException:
-			return None
+		deck = session.load(text, "ydk")
+		return session.dump(deck, 'txt')+'\n'
+
 
 if __name__ == '__main__':
 	deck_id = sys.argv[1]
 	deck = download(deck_id)
-	if deck:
-		sys.stdout.write(deck)
-	else:
-		sys.stdout.write("{} is not a valid yugiohtopdecks.py deck.\n".format(deck_id))
+	sys.stdout.write(deck)

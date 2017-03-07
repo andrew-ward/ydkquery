@@ -10,8 +10,13 @@ from . import deck
 # Handles the ygopro-percy interoperability
 from .ygopro import YGOProDatabase
 
+from . import ygopro as database
+
 # The fundamental card datatype
 from . import card
 
 # Someday this will do cool things
 from . import consistency
+
+# Create and use yql filters
+from . import yql

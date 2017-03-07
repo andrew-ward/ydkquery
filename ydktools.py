@@ -1,25 +1,51 @@
 #!/usr/bin/python
+
+"""
+YdkTools
+A command line application that finds and displays yugioh cards and related information.
+The general workflow works like this:
+
+First, select one or more cards. a filename will open that decklist and read in the cards, --stdin will do the same from stdin, --name will get a single card by name, and --query will select all cards that match a yql query.
+
+Then, determine what you want to do with the cards. You can display the price of the deck with --price, display the various printings and rarities of each card using --rarity, or write the cards out to a decklist using --output.
+
+Some basic usages:
+
+# print out a deck as text (for copy and pasting?)
+ydktools AI_Yugi.ydk --output txt
+
+# display the prices and print runs of a specific card
+ydktools --name Card --price --rarity
+
+# display the prices of all cards in an archetype
+ydktools --query 'name Darklord' --price
+
+
+Coming Eventually!
+  select decks from online sites like yugiohtopdecks or tcgplayer
+  display card text and stats
+  check if cards are forbidden or limited,
+"""
+
+
 import argparse
 import os, sys
 import ygo
 from ygopro_config import YGOPRO_PATH
 
 def construct_parser():
-	parser = argparse.ArgumentParser(description='ydktools')
+	parser = argparse.ArgumentParser(description="A command line application that finds and displays yugioh cards and related information.")
 
 	# Get Cards
 	parser.add_argument('filename', nargs="?", help='Open a decklist and use those cards')
 	parser.add_argument('-n', '--name', help="Find a single card by name")
 	parser.add_argument('-q', '--query', action="append", help='Use a yql query to specify cards')
-	parser.add_argument('-i', '--input', '--stdin', nargs='?', const="ydk", help='read in a decklist from stdin using the given format. Default is ydk.')
+	parser.add_argument('-i', '--stdin', nargs='?', const="ydk", help='read in a decklist from stdin using the given format. Default is ydk.')
 
 	# Card Info
 	parser.add_argument('-p', '--price', action='store_true', help='Show price of each card')
 
 	parser.add_argument('-r', '--rarity', action='store_true', help='Show available rarities of all cards')
-	"""
-	parser.add_argument('-P', '--prefer', help='choose what versions of cards to look at to determine price.')
-	"""
 
 	# Output Format
 	parser.add_argument('-o', '--output', nargs='?', const='ydk', help='Write result to file. Determine format by filename. Alternately, just give the format to write result to stdout.')

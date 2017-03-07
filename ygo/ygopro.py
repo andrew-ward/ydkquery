@@ -37,6 +37,10 @@ class YGOProDatabase(object):
 		return False
 
 	def all_cards(self):
+		"""
+		Get all cards in the database.
+		:returns: list of YugiohCards
+		"""
 		if self._connection is None:
 			self.open()
 		cursor = self._connection.cursor()
@@ -51,6 +55,12 @@ class YGOProDatabase(object):
 		
 
 	def find_id(self, cid):
+		"""
+		Get a card with the given id
+		:param cid: The card's id.
+		:type cid: str or int
+		:returns: A YugiohCard object
+		"""
 		if self._connection is None:
 			self.open()
 		cursor = self._connection.cursor()
@@ -64,6 +74,12 @@ class YGOProDatabase(object):
 		raise CardNotFoundException('Could not find card with id#{0}'.format(cid))
 
 	def find_name(self, name):
+		"""
+		Get a card with the given name
+		:param cid: The card's name.
+		:type cid: str
+		:returns: A YugiohCard object
+		"""
 		if self._connection is None:
 			self.open()
 		cursor = self._connection.cursor()
