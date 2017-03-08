@@ -53,8 +53,8 @@ def construct_parser():
 
 
 def get_input(session, args):
-	if args.input is not None:
-		fmt = args.input
+	if args.stdin is not None:
+		fmt = args.stdin
 		text = sys.stdin.read()
 		return session.load(text, fmt)
 
@@ -66,7 +66,11 @@ def get_input(session, args):
 	elif args.filename is not None:
 		flname = args.filename
 		# no fmt means session will auto-detect format based on file extension
-		return session.open_deck(flname)
+		result = session.open_deck(flname)
+		if result is None:
+			sys.stdout.write("Could not find file {}\n".format(args.filename))
+		else:
+			return result
 
 	elif args.query is not None:
 		cards = session.yql(args.query)
@@ -91,14 +95,14 @@ def write_output(session, args, deck):
 		session.save_deck(deck, args.output)
 	
 def display_info(session, args, deck):
-	if args.price is None and args.rarity is None:
+	if (not args.price) and (not args.rarity):
 		return
 
 	if len(deck.side) == 0 and len(deck.extra) == 0:
-		rarity = args.rarity is not None
+		rarity = args.rarity
 		display_set_price(session, deck.main, _cheapest, rarity)
 	else:
-		rarity = args.rarity is not None
+		rarity = args.rarity
 		display_deck_price(session, deck, _cheapest, rarity)
 
 def _default_sort_key(card):
@@ -111,12 +115,12 @@ def _cheapest(cards):
 			least = card.price.average
 	return least
 
-def display_card_price(session, lines, indent, card, get_price, rarity):
+def display_card_price(session, lines, indent, card, count, get_price, rarity):
 	price_data = session.price_data(card)
 	price = get_price(price_data)
 	price_str = ygo.abstract.format_money(price)
 	if rarity:
-		lines.append('{} {}'.format(indent*' ', card.name))
+		lines.append('{} {} x{}'.format(indent*' ', card.name, count))
 		for print_run in price_data:
 			tag = print_run.print_tag
 			rarity = print_run.rarity
@@ -127,14 +131,15 @@ def display_card_price(session, lines, indent, card, get_price, rarity):
 			else:
 				lines.append('{}         {} - {}'.format((indent+4)*' ', tag, rarity))
 	else:
-		lines.append('{}[{}] {}'.format(indent*' ', price_str, card.name))
-	return price
+		lines.append('{}[{}] {} x{}'.format(indent*' ', price_str, card.name, count))
+	return (price * count)
 
 def display_set_price(session, cardset, get_price, rarity):
 	total = 0
 	lines = ['All Cards ({price})']
 	for card in sorted(cardset, key=_default_sort_key):
-		total += display_card_price(session, lines, 4, card, get_price, rarity)
+		count = cardset.count(card)
+		total += display_card_price(session, lines, 4, card, count, get_price, rarity)
 	output = os.linesep.join(lines)
 	output = output.format(price=ygo.abstract.format_money(total))
 	sys.stdout.write(output+'\n')
@@ -154,23 +159,28 @@ def display_deck_price(session, deck, get_price, rarity):
 	lines = ['Main Deck ({main})']
 	lines.append('    Monsters ({monster})')
 	for monster in deck.main.monsters():
-		info['monster'] += display_card_price(session, lines, 8, monster, get_price, rarity)
+		count = deck.main.count(monster)
+		info['monster'] += display_card_price(session, lines, 8, monster, count, get_price, rarity)
 
 	lines.append('    Spells ({spell})')
 	for spell in deck.main.spells():
-		info['spell'] += display_card_price(session, lines, 8, spell, get_price, rarity)
+		count = deck.main.count(spell)
+		info['spell'] += display_card_price(session, lines, 8, spell, count, get_price, rarity)
 	
 	lines.append('    Traps ({trap})')
 	for trap in deck.main.traps():
-		info['trap'] += display_card_price(session, lines, 8, trap, get_price, rarity)
+		count = deck.main.count(trap)
+		info['trap'] += display_card_price(session, lines, 8, trap, count, get_price, rarity)
 
 	lines.append('Extra ({extra})')
 	for monster in deck.extra:
-		info['extra'] += display_card_price(session, lines, 4, monster, get_price, rarity)
+		count = deck.main.count(monster)
+		info['extra'] += display_card_price(session, lines, 4, monster, count, get_price, rarity)
 
 	lines.append('Side ({side})')
 	for card in deck.side:
-		info['side'] += display_card_price(session, lines, 4, card, get_price, rarity)
+		count = deck.main.count(card)
+		info['side'] += display_card_price(session, lines, 4, card, count, get_price, rarity)
 	lines.append('Total ({total})')
 
 	info['main'] = info['monster'] + info['spell'] + info['trap']
@@ -186,8 +196,8 @@ if __name__ == '__main__':
 	args = parser.parse_args()
 
 	deck = get_input(session, args)
-
-	display_info(session, args, deck)
+	if deck is not None:
+		display_info(session, args, deck)
 	
-	write_output(session, args, deck)
+		write_output(session, args, deck)
 	

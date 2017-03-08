@@ -9,6 +9,9 @@ class YugiohSet(object):
 		self._contents = {}
 		if cards:
 			self.add_cards(cards)
+
+	def __getitem__(self, card):
+		return self._contents.get(card, 0)
 			
 	def __len__(self):
 		"""
